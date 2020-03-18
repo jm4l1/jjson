@@ -2,8 +2,12 @@
 #define _JJSON_HPP_
 
 #include <iostream>
+#include <sstream>
 #include <memory>
 #include <string>
+#include <algorithm>
+#include <cmath>
+
 /*
     Class to represents JSON (Javascript Object Notation) data format
     specified in RFC 7159 (https://tools.ietf.org/html/rfc7159)
@@ -27,6 +31,8 @@
 #define JJSON_NEW_LINE '\n'
 #define JJSON_CARRIAGE_RETURN '\r'
 #define JJSON_ESCAPE_CHARACTERS "\\\"/\b\f\n\t\r"
+#define JJSON_MIN_INT  ( pow( 2 , 53 ) * -1) + 1
+#define JJSON_MAX_INT  ( pow( 2 , 53 )  - 1 )
 // auto white_space = jjson_str_t("") + JJSON_HORIZONTAL_TAB + JJSON_NEW_LINE + JJSON_SPACE + JJSON_CARRIAGE_RETURN ;
 namespace {
     typedef std::string jjson_str_t;
@@ -104,13 +110,18 @@ namespace jjson{
                     Null,
                     BOOLEAN,
                     STRING,
+                    INT,
+                    FLOAT
                 } ;
                 value_type type = value_type::INVALID;
                 union 
                 {
                     bool boolean_value;
                     jjson_str_t *string_value;
+                    int64_t int_value;
+                    double float_value;
                 };
+                int exponent = 1;
                 impl(){
                 };
                 ~impl(){
@@ -136,7 +147,9 @@ namespace jjson{
             value(bool bool_value);
             value(const char* cstr_value);
             value(const jjson_str_t& string_value);
-
+            value(const int64_t int_value , const int exponent = 0);
+            value(const double float_value , const int exponent = 0);
+            
             bool operator==(const value &B)const;
 
             ~value(); // destructor
@@ -147,6 +160,8 @@ namespace jjson{
 
             jjson_str_t to_string() const;
             static value parse_from_string(const jjson_str_t &string_object);
+            static value decode_as_int(const jjson_str_t &string_object);
+            static value decode_as_float(const jjson_str_t &string_object);
     };
 }
 

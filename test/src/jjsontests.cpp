@@ -24,8 +24,10 @@ TEST_CASE("trim_string remove whitespace")
 }
 TEST_CASE("jjson value default constructor default")
 {
-    auto jjson_null = jjson::value();
-    REQUIRE(jjson_null.to_string()== JJSON_INVALD);
+    auto jjson_invalid = jjson::value();
+    auto jjson_invalid2 = jjson::value();
+    REQUIRE(jjson_invalid.to_string()== JJSON_INVALD);
+    REQUIRE(jjson_invalid == jjson_invalid2);
 }
 TEST_CASE("jjson value null constructor")
 {
@@ -65,10 +67,57 @@ TEST_CASE("jjson value string constructor")
 {
     auto str = std::string("jjson string");
     auto jjson_string = jjson::value(str);
-    REQUIRE(jjson_string.to_string() == "\"jjson string\"");
+    REQUIRE(jjson_string.to_string() == R"("jjson string")");
 }
 TEST_CASE("jjson value string to string")
 {
-    const auto jjson = jjson::value::parse_from_string("\"jjson string\"");
+    const auto jjson = jjson::value::parse_from_string(R"("jjson string")");
     REQUIRE(jjson == std::string("jjson string"));
+}
+TEST_CASE("jjson value number constructor")
+{
+    auto jjson_int = jjson::value((int64_t)10);
+    auto jjson_int2 = jjson::value((int64_t)10, 1);
+    auto jjson_negative_int = jjson::value((int64_t)-890);
+    auto jjson_int_w_exponent = jjson::value((int64_t)10,12);
+    auto jjson_float = jjson::value(183.32);
+    auto jjson_negative_float = jjson::value(-0.0032);
+    auto jjson_float_w_exponent = jjson::value(3.14,-1);
+    REQUIRE(jjson_int.to_string() == "10");
+    REQUIRE_FALSE(jjson_int == jjson_int2);
+    REQUIRE(jjson_negative_int.to_string() == "-890");
+    REQUIRE(jjson_int_w_exponent.to_string() == "10e12");
+    REQUIRE(jjson_float.to_string() == "183.32");
+    REQUIRE(jjson_negative_float.to_string() == "-0.0032");
+    REQUIRE(jjson_float_w_exponent.to_string() == "3.14e-1");
+}
+TEST_CASE("jjson value parse number from string")
+{
+    const auto jjson_int = jjson::value::parse_from_string("10");
+    const auto jjson_negative_int = jjson::value::parse_from_string("-3340");
+    const auto jjson_float = jjson::value::parse_from_string("340.2343");
+    const auto jjson_negative_float = jjson::value::parse_from_string("-0.0032");
+    REQUIRE(jjson_int == (int64_t)10);
+    REQUIRE(jjson_negative_int == (int64_t)(-3340));
+    REQUIRE(jjson_float == 340.2343);
+    REQUIRE(jjson_negative_float == -0.0032);
+}
+TEST_CASE("jjson value parse number invalid number")
+{
+    auto jjson_int_invalid1 = jjson::value::parse_from_string("+1");
+    auto jjson_int_invalid2 = jjson::value::parse_from_string("?1");
+    auto jjson_int_invalid3 = jjson::value::parse_from_string("09");
+    auto jjson_int_invalid4 = jjson::value::parse_from_string("9etest");
+    auto jjson_float_invalid1 = jjson::value::parse_from_string("+1.2");
+    auto jjson_float_invalid2 = jjson::value::parse_from_string("1..1");
+    auto jjson_float_invalid3 = jjson::value::parse_from_string("1.2.1");
+    auto jjson_float_invalid4 = jjson::value::parse_from_string("01.23");
+    REQUIRE(jjson_int_invalid1.to_string() == JJSON_INVALD);
+    REQUIRE(jjson_int_invalid2.to_string() == JJSON_INVALD);
+    REQUIRE(jjson_int_invalid3.to_string() == JJSON_INVALD);
+    REQUIRE(jjson_int_invalid4.to_string() == JJSON_INVALD);
+    REQUIRE(jjson_float_invalid1.to_string() == JJSON_INVALD);
+    REQUIRE(jjson_float_invalid2.to_string() == JJSON_INVALD);
+    REQUIRE(jjson_float_invalid3.to_string() == JJSON_INVALD);
+    REQUIRE(jjson_float_invalid4.to_string() == JJSON_INVALD);
 }
