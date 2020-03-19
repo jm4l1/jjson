@@ -158,6 +158,9 @@ namespace jjson{
             value(const double float_value , const int exponent = 0);
             value(value_type type = value_type::INVALID);
             bool operator==(const value &B)const;
+            value&& operator[](int index)const;
+            size_t len() const;
+            value_type type() const;
 
             ~value(); // destructor
             value(const value&);   // copy construtor

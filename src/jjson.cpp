@@ -201,6 +201,36 @@ namespace jjson{
             }
         }
     }
+
+    value&& value::operator[](int index) const
+    {
+        if(this->jimpl_->type != value_type::ARRAY)
+        {
+            return nullptr;
+        }
+        if(index < 0)
+        {
+            return nullptr;
+        }
+        if(index > this->jimpl_->array_value->size())
+        {
+            return nullptr;
+        }
+        return std::move((*this->jimpl_->array_value)[index]);
+    }
+
+    size_t value::len() const
+    {
+        if(this->jimpl_->type != value_type::ARRAY)
+        {
+            return -1;
+        }
+        return this->jimpl_->array_value->size();
+    };
+    value::value_type value::type() const
+    {
+        return this->jimpl_->type;
+    }
     value value::decode_as_int(const jjson_str_t &string_object)
     {
         if(
