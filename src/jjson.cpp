@@ -1,46 +1,104 @@
 #include "../include/jjson.hpp"
 #include <stdexcept>
 namespace jjson{
-    value::value()
+    value::value(value::value_type type)
     :jimpl_(new impl)
     {
+        switch (type)
+        {
+        case value::value_type::ARRAY :
+            jimpl_->type = type;
+            jimpl_->array_value = new std::vector<value>;
+            break;
+        default:
+            break;
+        }
     };
     value::value(std::nullptr_t)
     :jimpl_(new impl)
     {
-        jimpl_->type= impl::value_type::Null;
+        jimpl_->type= value::value_type::Null;
     };
     value::value(bool bool_value)
     :jimpl_(new impl)
     {
-        jimpl_->type = impl::value_type::BOOLEAN;
+        jimpl_->type = value::value_type::BOOLEAN;
         jimpl_->boolean_value = bool_value;
     }
     value::value(const char* cstr_value)
     :jimpl_(new impl)
     {
-        jimpl_->type = impl::value_type::STRING;
+        jimpl_->type = value::value_type::STRING;
         jimpl_->string_value = new jjson_str_t(cstr_value);
     }
     value::value(const jjson_str_t &string_value)
     :jimpl_(new impl)
     {
-        jimpl_->type = impl::value_type::STRING;
+        jimpl_->type = value::value_type::STRING;
         jimpl_->string_value = new jjson_str_t(string_value);
     }
     value::value(const int64_t int_value , const int exponent)
     :jimpl_(new impl)
     {
-        jimpl_->type = impl::value_type::INT;
+        jimpl_->type = value::value_type::INT;
         jimpl_->int_value = int_value;
         jimpl_->exponent = exponent;
     }
     value::value(const double float_value , const int exponent)
     :jimpl_(new impl)
     {
-        jimpl_->type = impl::value_type::FLOAT;
+        jimpl_->type = value::value_type::FLOAT;
         jimpl_->float_value = float_value;
         jimpl_->exponent = exponent;
+    }
+    value::value(const value& B)
+    :jimpl_(new impl)
+    {
+        this->jimpl_->type = B.jimpl_->type;
+        switch (B.jimpl_->type)
+        {
+        case value_type::ARRAY:
+            this->jimpl_->array_value = B.jimpl_->array_value;
+            break;
+        case value_type::BOOLEAN:
+            this->jimpl_->boolean_value = B.jimpl_->boolean_value;
+            break;
+        case value_type::FLOAT:
+            this->jimpl_->float_value = B.jimpl_->float_value;
+            this->jimpl_->exponent = B.jimpl_->exponent;
+            break;
+        case value_type::INT:
+            this->jimpl_->int_value = B.jimpl_->int_value;
+            this->jimpl_->exponent = B.jimpl_->exponent;
+            break;
+        case value_type::STRING:
+            this->jimpl_->string_value = new jjson_str_t;
+            *(this->jimpl_->string_value) = *(B.jimpl_->string_value);
+            break;
+        
+        default:
+            break;
+        }
+    };   // copy construtor
+    value::value(value&& B)
+    :jimpl_(new impl){
+    };        // move construtor
+    void value::Add(const value& value)
+    {
+        if(this->jimpl_->type != value_type::ARRAY )
+        {
+            return;
+        }
+        this->jimpl_->array_value->emplace_back(value);
+    }
+    value Array(std::initializer_list<value> values)
+    {
+        auto jjson_array = value(value::value_type::ARRAY);
+        for(auto itr = values.begin() ; itr != values.end()  ; ++itr)
+        {
+            jjson_array.Add(*itr);
+        }
+        return jjson_array;
     }
     value::~value()
     {
@@ -49,22 +107,37 @@ namespace jjson{
     {
         jjson_str_t exponent_string;
         std::stringstream float_stream;
+        jjson_str_t array_string ;
 
         switch (jimpl_->type)
         {
-        case impl::value_type::Null:
+        case value_type::Null:
             return JJSON_NULL;
-        case impl::value_type::BOOLEAN:
+        case value_type::BOOLEAN:
             return jimpl_->boolean_value ? JJSON_TRUE : JJSON_FALSE;
-        case impl::value_type::STRING:
+        case value_type::STRING:
             return '\"'+  to_escaped_string(*jimpl_->string_value , JJSON_ESCAPE_CHARACTERS) + '\"';    
-        case impl::value_type::INT:
+        case value_type::INT:
             exponent_string = ( jimpl_->exponent == 0 ? "" : "e" + std::to_string(jimpl_->exponent));
             return std::to_string(jimpl_->int_value) + exponent_string ;    
-        case impl::value_type::FLOAT:
+        case value_type::FLOAT:
             float_stream << jimpl_->float_value ;
             exponent_string = ( jimpl_->exponent == 0 ? "" : "e" + std::to_string(jimpl_->exponent));
             return float_stream.str() + exponent_string ;
+        case value_type::ARRAY:
+            array_string += '[';
+            array_string += jimpl_->array_value->begin()->to_string();
+            for(
+                auto itr = jimpl_->array_value->begin() + 1;
+                itr != jimpl_->array_value->end();
+                ++itr
+            )
+            {
+                array_string +=  " , ";
+                array_string += itr->to_string();
+            }
+            array_string += ']';
+            return array_string;
         default:
             return JJSON_INVALD;
         }
@@ -79,15 +152,15 @@ namespace jjson{
         {
             switch (jimpl_->type)
             {
-                case impl::value_type::Null: 
+                case value::value_type::Null: 
                     return true;
-                case impl::value_type::BOOLEAN:
+                case value::value_type::BOOLEAN:
                     return jimpl_->boolean_value == B.jimpl_->boolean_value;
-                case impl::value_type::STRING:
+                case value::value_type::STRING:
                     return *(jimpl_->string_value) == *(B.jimpl_->string_value);
-                case impl::value_type::INT:
+                case value::value_type::INT:
                     return (jimpl_->int_value == B.jimpl_->int_value) && (jimpl_->exponent == B.jimpl_->exponent);
-                case impl::value_type::FLOAT:
+                case value::value_type::FLOAT:
                     return (jimpl_->float_value == B.jimpl_->float_value) && (jimpl_->exponent == B.jimpl_->exponent);
                 default:
                     return true;

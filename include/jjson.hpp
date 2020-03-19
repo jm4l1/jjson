@@ -2,11 +2,13 @@
 #define _JJSON_HPP_
 
 #include <iostream>
+#include <vector>
 #include <sstream>
 #include <memory>
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <initializer_list>
 
 /*
     Class to represents JSON (Javascript Object Notation) data format
@@ -93,9 +95,19 @@ namespace {
     }
 }
 namespace jjson{
-
     class value
     {
+        public:
+            enum class value_type
+                    {
+                        INVALID,
+                        Null,
+                        BOOLEAN,
+                        STRING,
+                        INT,
+                        FLOAT,
+                        ARRAY
+                    } ;
         private:
             struct impl
             {
@@ -104,15 +116,7 @@ namespace jjson{
                 // null  = %x6e.75.6c.6c      ; null
                 // true  = %x74.72.75.65      ; true
                 // string = quotation-mark *char quotation-mark
-                enum class value_type
-                {
-                    INVALID,
-                    Null,
-                    BOOLEAN,
-                    STRING,
-                    INT,
-                    FLOAT
-                } ;
+                
                 value_type type = value_type::INVALID;
                 union 
                 {
@@ -120,6 +124,7 @@ namespace jjson{
                     jjson_str_t *string_value;
                     int64_t int_value;
                     double float_value;
+                    std::vector<value> *array_value;
                 };
                 int exponent = 1;
                 impl(){
@@ -127,34 +132,36 @@ namespace jjson{
                 ~impl(){
                     switch (this->type)
                     {
-                    case impl::value_type::STRING:
+                    case value_type::STRING:
                         delete this->string_value;
+                        break;
+                    case value_type::ARRAY:
+                        delete this->array_value;
                         break;
                     
                     default:
                         break;
                     }
                 };
-                impl(const impl&) = delete;
-                impl(impl&&) = delete;
+                impl(const impl&) = default;
+                impl(impl&&) = default;
                 impl& operator=(impl&&) = delete;
                 impl& operator=(const impl&) = delete;
             }; // PIMPL implementation
             std::unique_ptr<impl> jimpl_;
         public:
-            value();
             value(std::nullptr_t);
             value(bool bool_value);
             value(const char* cstr_value);
             value(const jjson_str_t& string_value);
             value(const int64_t int_value , const int exponent = 0);
             value(const double float_value , const int exponent = 0);
-            
+            value(value_type type = value_type::INVALID);
             bool operator==(const value &B)const;
 
             ~value(); // destructor
-            value(const value&) = delete;   // copy construtor
-            value(value&&) = default;        // move construtor
+            value(const value&);   // copy construtor
+            value(value&&);        // move construtor
             value& operator=(const value&) = delete;    // copy assignment
             value& operator=(value&&) = default;         // move assignment
 
@@ -162,7 +169,10 @@ namespace jjson{
             static value parse_from_string(const jjson_str_t &string_object);
             static value decode_as_int(const jjson_str_t &string_object);
             static value decode_as_float(const jjson_str_t &string_object);
+
+            void Add(const value& value);
     };
+    value Array(std::initializer_list<value> values);
 }
 
 #endif // _JJSON_HPP_

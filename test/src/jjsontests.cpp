@@ -121,3 +121,12 @@ TEST_CASE("jjson value parse number invalid number")
     REQUIRE(jjson_float_invalid3.to_string() == JJSON_INVALD);
     REQUIRE(jjson_float_invalid4.to_string() == JJSON_INVALD);
 }
+TEST_CASE("jjson value array constructor")
+{
+    const auto jjson_array = jjson::Array({ (int64_t)1 , (int64_t)2 ,(double)3.00 });
+    const auto jjson_array2 = jjson::Array({ true , nullptr ,false });
+    const auto jjson_array3 = jjson::Array({ "duck" , (int64_t)2 ,"goose" });
+    REQUIRE(jjson_array.to_string() == R"([1 , 2 , 3])");
+    REQUIRE(jjson_array2.to_string() == R"([true , null , false])");
+    REQUIRE(jjson_array3.to_string() == R"(["duck" , 2 , "goose"])");
+}
