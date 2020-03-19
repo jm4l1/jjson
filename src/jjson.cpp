@@ -58,7 +58,8 @@ namespace jjson{
         switch (B.jimpl_->type)
         {
         case value_type::ARRAY:
-            this->jimpl_->array_value = B.jimpl_->array_value;
+            this->jimpl_->array_value = new std::vector<value>;
+            *(this->jimpl_->array_value) = *(B.jimpl_->array_value);
             break;
         case value_type::BOOLEAN:
             this->jimpl_->boolean_value = B.jimpl_->boolean_value;
@@ -91,6 +92,35 @@ namespace jjson{
         }
         this->jimpl_->array_value->emplace_back(value);
     }
+    value& value::operator=(const value& B){
+        jimpl_.reset(new impl());
+        this->jimpl_->type = B.jimpl_->type;
+        switch (this->jimpl_->type)
+        {
+        case value_type::ARRAY:
+            this->jimpl_->array_value = new std::vector<value>;
+            *(this->jimpl_->array_value) = *(B.jimpl_->array_value);
+            break;
+        case value_type::STRING:
+            this->jimpl_->string_value = new jjson_str_t;
+            *(this->jimpl_->string_value) = *(B.jimpl_->string_value);
+            break;
+        case value_type::BOOLEAN:
+            this->jimpl_->boolean_value = B.jimpl_->boolean_value;
+            break;
+        case value_type::FLOAT:
+            this->jimpl_->float_value = B.jimpl_->float_value;
+            this->jimpl_->exponent = B.jimpl_->exponent;
+            break;
+        case value_type::INT:
+            this->jimpl_->int_value = B.jimpl_->int_value;
+            this->jimpl_->exponent = B.jimpl_->exponent;
+            break;
+        default:
+            break;
+        }
+        return *this;
+    };    // copy assignment
     value Array(std::initializer_list<value> values)
     {
         auto jjson_array = value(value::value_type::ARRAY);
@@ -125,6 +155,10 @@ namespace jjson{
             exponent_string = ( jimpl_->exponent == 0 ? "" : "e" + std::to_string(jimpl_->exponent));
             return float_stream.str() + exponent_string ;
         case value_type::ARRAY:
+            if(jimpl_->array_value->empty())
+            {
+                return "[]";
+            }
             array_string += '[';
             array_string += jimpl_->array_value->begin()->to_string();
             for(

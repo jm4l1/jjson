@@ -162,7 +162,7 @@ namespace jjson{
             ~value(); // destructor
             value(const value&);   // copy construtor
             value(value&&);        // move construtor
-            value& operator=(const value&) = delete;    // copy assignment
+            value& operator=(const value&);    // copy assignment
             value& operator=(value&&) = default;         // move assignment
 
             jjson_str_t to_string() const;

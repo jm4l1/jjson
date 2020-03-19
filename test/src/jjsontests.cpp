@@ -126,7 +126,14 @@ TEST_CASE("jjson value array constructor")
     const auto jjson_array = jjson::Array({ (int64_t)1 , (int64_t)2 ,(double)3.00 });
     const auto jjson_array2 = jjson::Array({ true , nullptr ,false });
     const auto jjson_array3 = jjson::Array({ "duck" , (int64_t)2 ,"goose" });
+    const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
+    const auto jjson_nested_array = jjson::Array({ "duck" , (int64_t)2 , jjson_array4 });
+    const auto jjson_empty_array =jjson::Array({});
+    const auto jjson_nested_empty_array =jjson::Array({jjson_empty_array,jjson_empty_array,jjson_empty_array});
     REQUIRE(jjson_array.to_string() == R"([1 , 2 , 3])");
     REQUIRE(jjson_array2.to_string() == R"([true , null , false])");
     REQUIRE(jjson_array3.to_string() == R"(["duck" , 2 , "goose"])");
+    REQUIRE(jjson_nested_array.to_string() == R"(["duck" , 2 , ["test" , 5]])");
+    REQUIRE(jjson_empty_array.to_string() == R"([])");
+    REQUIRE(jjson_nested_empty_array.to_string() == R"([[] , [] , []])");
 }
