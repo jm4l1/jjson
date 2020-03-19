@@ -10,6 +10,10 @@ namespace jjson{
             jimpl_->type = type;
             jimpl_->array_value = new std::vector<value>;
             break;
+        case value::value_type::OBJECT :
+            jimpl_->type = type;
+            jimpl_->object_value = new jjson_object;
+            break;
         default:
             break;
         }
@@ -51,48 +55,52 @@ namespace jjson{
         jimpl_->float_value = float_value;
         jimpl_->exponent = exponent;
     }
-    value::value(const value& B)
+    value::value(const value& B)   // copy construtor
     :jimpl_(new impl)
     {
         this->jimpl_->type = B.jimpl_->type;
         switch (B.jimpl_->type)
         {
-        case value_type::ARRAY:
-            this->jimpl_->array_value = new std::vector<value>;
-            *(this->jimpl_->array_value) = *(B.jimpl_->array_value);
-            break;
-        case value_type::BOOLEAN:
-            this->jimpl_->boolean_value = B.jimpl_->boolean_value;
-            break;
-        case value_type::FLOAT:
-            this->jimpl_->float_value = B.jimpl_->float_value;
-            this->jimpl_->exponent = B.jimpl_->exponent;
-            break;
-        case value_type::INT:
-            this->jimpl_->int_value = B.jimpl_->int_value;
-            this->jimpl_->exponent = B.jimpl_->exponent;
-            break;
-        case value_type::STRING:
-            this->jimpl_->string_value = new jjson_str_t;
-            *(this->jimpl_->string_value) = *(B.jimpl_->string_value);
-            break;
-        
-        default:
-            break;
+            case value_type::ARRAY:
+                this->jimpl_->array_value = new std::vector<value>;
+                *(this->jimpl_->array_value) = *(B.jimpl_->array_value);
+                break;
+            case value_type::OBJECT:
+                this->jimpl_->object_value = new jjson_object;
+                *(this->jimpl_->object_value) = *(B.jimpl_->object_value);
+                break;
+            case value_type::BOOLEAN:
+                this->jimpl_->boolean_value = B.jimpl_->boolean_value;
+                break;
+            case value_type::FLOAT:
+                this->jimpl_->float_value = B.jimpl_->float_value;
+                this->jimpl_->exponent = B.jimpl_->exponent;
+                break;
+            case value_type::INT:
+                this->jimpl_->int_value = B.jimpl_->int_value;
+                this->jimpl_->exponent = B.jimpl_->exponent;
+                break;
+            case value_type::STRING:
+                this->jimpl_->string_value = new jjson_str_t;
+                *(this->jimpl_->string_value) = *(B.jimpl_->string_value);
+                break;
+            default:
+                break;
         }
-    };   // copy construtor
-    value::value(value&& B)
+    };
+    value::value(value&& B)        // move construtor
     :jimpl_(new impl){
-    };        // move construtor
+    };
     void value::Add(const value& value)
     {
-        if(this->jimpl_->type != value_type::ARRAY )
+        if(this->jimpl_->type != value_type::ARRAY)
         {
             return;
         }
         this->jimpl_->array_value->emplace_back(value);
     }
-    value& value::operator=(const value& B){
+    value& value::operator=(const value& B)    // copy assignment
+    {
         jimpl_.reset(new impl());
         this->jimpl_->type = B.jimpl_->type;
         switch (this->jimpl_->type)
@@ -100,6 +108,10 @@ namespace jjson{
         case value_type::ARRAY:
             this->jimpl_->array_value = new std::vector<value>;
             *(this->jimpl_->array_value) = *(B.jimpl_->array_value);
+            break;
+        case value_type::OBJECT:
+            this->jimpl_->object_value = new jjson_object;
+            *(this->jimpl_->object_value) = *(B.jimpl_->object_value);
             break;
         case value_type::STRING:
             this->jimpl_->string_value = new jjson_str_t;
@@ -120,7 +132,41 @@ namespace jjson{
             break;
         }
         return *this;
-    };    // copy assignment
+    };
+    value& value::operator=(value&& B)            // move assignment
+    {
+        jimpl_.reset(new impl());;
+        this->jimpl_->type = B.jimpl_->type;
+        switch (this->jimpl_->type)
+        {
+        case value_type::ARRAY:
+            this->jimpl_->array_value = new std::vector<value>;
+            *(this->jimpl_->array_value) = *(B.jimpl_->array_value);
+            break;
+        case value_type::OBJECT:
+            this->jimpl_->object_value = new jjson_object;
+            *(this->jimpl_->object_value) = *(B.jimpl_->object_value);
+            break;
+        case value_type::STRING:
+            this->jimpl_->string_value = new jjson_str_t;
+            *(this->jimpl_->string_value) = *(B.jimpl_->string_value);
+            break;
+        case value_type::BOOLEAN:
+            this->jimpl_->boolean_value = B.jimpl_->boolean_value;
+            break;
+        case value_type::FLOAT:
+            this->jimpl_->float_value = B.jimpl_->float_value;
+            this->jimpl_->exponent = B.jimpl_->exponent;
+            break;
+        case value_type::INT:
+            this->jimpl_->int_value = B.jimpl_->int_value;
+            this->jimpl_->exponent = B.jimpl_->exponent;
+            break;
+        default:
+            break;
+        }
+        return *this;
+    }
     value Array(std::initializer_list<value> values)
     {
         auto jjson_array = value(value::value_type::ARRAY);
@@ -130,6 +176,11 @@ namespace jjson{
         }
         return jjson_array;
     }
+    value Object()
+    {
+        auto jjson_object = value(value::value_type::OBJECT);
+        return jjson_object;
+    }
     value::~value()
     {
     };
@@ -138,7 +189,7 @@ namespace jjson{
         jjson_str_t exponent_string;
         std::stringstream float_stream;
         jjson_str_t array_string ;
-
+        jjson_str_t object_string ;
         switch (jimpl_->type)
         {
         case value_type::Null:
@@ -172,6 +223,26 @@ namespace jjson{
             }
             array_string += ']';
             return array_string;
+        case value_type::OBJECT:
+            if(jimpl_->object_value->empty())
+            {
+                return "{}";
+            }
+            object_string += "{";
+            for(
+                auto itr = jimpl_->object_value->begin() ;
+                itr != jimpl_->object_value->end() ;
+                // ++itr
+            )
+            {
+                object_string +=  JJSON_DQUOTE +  itr->first +  JJSON_DQUOTE + ":" + itr->second.to_string();
+                if(++itr != jimpl_->object_value->end())
+                {
+                    object_string += ",";
+                }
+            }
+            object_string += "}";
+            return object_string;
         default:
             return JJSON_INVALD;
         }
@@ -198,6 +269,8 @@ namespace jjson{
                     return (jimpl_->float_value == B.jimpl_->float_value) && (jimpl_->exponent == B.jimpl_->exponent);
                 case value::value_type::ARRAY:
                     return *(jimpl_->array_value) == *(B.jimpl_->array_value);
+                case value::value_type::OBJECT:
+                    return *(jimpl_->object_value) == *(B.jimpl_->object_value);
                 default:
                     return true;
             }
@@ -207,17 +280,41 @@ namespace jjson{
     {
         if(this->jimpl_->type != value_type::ARRAY)
         {
-            return nullptr;
+            auto v = new value();
+            v = nullptr; 
+            return std::move(*v);
         }
         if(index < 0)
         {
-            return nullptr;
+            auto v = new value();
+            v = nullptr; 
+            return std::move(*v);
         }
         if(index > this->jimpl_->array_value->size())
         {
-            return nullptr;
+            auto v = new value();
+            v = nullptr; 
+            return std::move(*v);
         }
         return std::move((*this->jimpl_->array_value)[index]);
+    }
+    value& value::operator[](const jjson_str_t&& key) const
+    {
+        if(this->jimpl_->type != value_type::OBJECT)
+        {
+            auto v = new value();
+            v = nullptr; 
+            return (value&)*v;
+        }
+        auto member = this->jimpl_->object_value->find(key);
+        if(member == this->jimpl_->object_value->end())
+        { 
+            auto v =  new value();
+            this->jimpl_->object_value->emplace(std::make_pair(key , *v));
+            member = this->jimpl_->object_value->find(key);
+            return (value&)member->second;
+        }
+        return (value&)member->second;
     }
     size_t value::len() const
     {

@@ -159,3 +159,24 @@ TEST_CASE("jjson value parse array")
     REQUIRE(jjson_nested_array ==  jjson::value::parse_from_string(R"(["duck" , 2 , ["test" , 5]])"));
     REQUIRE_FALSE(jjson_nested_array ==  jjson::value::parse_from_string(R"(["duck" , 2 , ["test" , 5] , []])"));
 }
+TEST_CASE("jjson value object constructor")
+{
+    const auto jjson_empty_object = jjson::Object();
+    const auto jjson_empty_array = jjson::Array();
+    const auto jjson_object = jjson::Object();
+    const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
+    REQUIRE(jjson_empty_object.to_string() == R"({})");
+    jjson_object["test"] = "string";
+    REQUIRE(jjson_object.to_string() == R"({"test":"string"})");
+    jjson_object["test"] = "new string";
+    REQUIRE(jjson_object.to_string() == R"({"test":"new string"})");
+    jjson_object["country"] = "Barbados";
+    REQUIRE(jjson_object.to_string() == R"({"country":"Barbados","test":"new string"})");
+    jjson_empty_object["int"] = (int64_t)12;
+    jjson_empty_object["bool"] = true;
+    jjson_object["array"] = jjson_array4;
+    jjson_object["object"] = jjson_empty_object;
+    jjson_object["parish"] = "St. George";
+    jjson_object["null"] = nullptr;
+    REQUIRE(jjson_object.to_string() == R"({"array":["test" , 5],"country":"Barbados","null":null,"object":{"bool":true,"int":12},"parish":"St. George","test":"new string"})");
+}

@@ -3,20 +3,18 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include <sstream>
 #include <memory>
 #include <string>
 #include <algorithm>
 #include <cmath>
 #include <initializer_list>
-
 /*
     Class to represents JSON (Javascript Object Notation) data format
     specified in RFC 7159 (https://tools.ietf.org/html/rfc7159)
                  RFC 8259 (https://tools.ietf.org/html/rfc8259)
 */
-
-
 #define JJSON_NULL "null"
 #define JJSON_TRUE "true"
 #define JJSON_FALSE "false"
@@ -95,6 +93,8 @@ namespace {
     }
 }
 namespace jjson{
+    class value;
+    typedef std::map<jjson_str_t , value> jjson_object;
     class value
     {
         public:
@@ -106,7 +106,8 @@ namespace jjson{
                         STRING,
                         INT,
                         FLOAT,
-                        ARRAY
+                        ARRAY,
+                        OBJECT
                     } ;
         private:
             struct impl
@@ -125,6 +126,7 @@ namespace jjson{
                     int64_t int_value;
                     double float_value;
                     std::vector<value> *array_value;
+                    jjson_object *object_value;
                 };
                 int exponent = 1;
                 impl(){
@@ -138,7 +140,9 @@ namespace jjson{
                     case value_type::ARRAY:
                         delete this->array_value;
                         break;
-                    
+                    case value_type::OBJECT:
+                        delete this->object_value;
+                        break;
                     default:
                         break;
                     }
@@ -159,6 +163,7 @@ namespace jjson{
             value(value_type type = value_type::INVALID);
             bool operator==(const value &B)const;
             value&& operator[](int index)const;
+            value& operator[](const jjson_str_t&& key) const;
             size_t len() const;
             value_type type() const;
 
@@ -166,7 +171,7 @@ namespace jjson{
             value(const value&);   // copy construtor
             value(value&&);        // move construtor
             value& operator=(const value&);    // copy assignment
-            value& operator=(value&&) = default;         // move assignment
+            value& operator=(value&&);         // move assignment
 
             jjson_str_t to_string() const;
             static value parse_from_string(const jjson_str_t &string_object);
@@ -176,7 +181,8 @@ namespace jjson{
 
             void Add(const value& value);
     };
-    value Array(std::initializer_list<value> values);
+    value Array(std::initializer_list<value> values={});
+    value Object();
 }
 
 #endif // _JJSON_HPP_
