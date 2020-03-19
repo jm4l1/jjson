@@ -196,12 +196,13 @@ namespace jjson{
                     return (jimpl_->int_value == B.jimpl_->int_value) && (jimpl_->exponent == B.jimpl_->exponent);
                 case value::value_type::FLOAT:
                     return (jimpl_->float_value == B.jimpl_->float_value) && (jimpl_->exponent == B.jimpl_->exponent);
+                case value::value_type::ARRAY:
+                    return *(jimpl_->array_value) == *(B.jimpl_->array_value);
                 default:
                     return true;
             }
         }
     }
-
     value&& value::operator[](int index) const
     {
         if(this->jimpl_->type != value_type::ARRAY)
@@ -218,7 +219,6 @@ namespace jjson{
         }
         return std::move((*this->jimpl_->array_value)[index]);
     }
-
     size_t value::len() const
     {
         if(this->jimpl_->type != value_type::ARRAY)
@@ -231,7 +231,7 @@ namespace jjson{
     {
         return this->jimpl_->type;
     }
-    value value::decode_as_int(const jjson_str_t &string_object)
+    value value::parse_as_int(const jjson_str_t &string_object)
     {
         if(
             string_object[0] != '-' &&
@@ -275,7 +275,7 @@ namespace jjson{
         }
         return value((int64_t)int_value , exponent);
     }
-    value value::decode_as_float(const jjson_str_t &string_object)
+    value value::parse_as_float(const jjson_str_t &string_object)
     {
         if(
             string_object[0] != '-' &&
@@ -356,6 +356,8 @@ namespace jjson{
             string_object[string_object.length() - 1] == ']'
         )
         {
+
+            return parse_as_array(string_object);
         }
         else if(
             !string_object.empty() &&
@@ -371,9 +373,50 @@ namespace jjson{
             )
         )
         {
-            return decode_as_float(string_object);
+            return parse_as_float(string_object);
         }
-        return decode_as_int(string_object);
+        return parse_as_int(string_object);
         // return value();
+    }
+    value value::parse_as_array(const jjson_str_t &string_object){
+        auto array_string = string_object;
+        array_string.erase(array_string.end()-1);
+        array_string.erase(array_string.begin());
+        trim_string(&array_string , " ");
+        auto jjson_array = value(value_type::ARRAY);
+        while(!array_string.empty())
+        {
+            trim_string(&array_string , " ");
+            size_t str_pos; 
+            if(array_string[0] == '[')
+            {
+                auto array_end_pos = array_string.find_first_of(']');
+                auto nested_array_str = jjson_str_t(array_string , 0 , array_end_pos + 1 );
+                trim_string(&nested_array_str , " ");
+                jjson_array.Add(parse_as_array(nested_array_str));
+                array_string.erase(0 , array_end_pos + 1  );
+            }
+            else
+            {
+                str_pos = array_string.find_first_of(',');
+                auto substr = jjson_str_t(array_string , 0 , str_pos );
+                trim_string(&substr , " ");
+                jjson_array.Add(parse_from_string(substr));
+                array_string.erase(0 , str_pos + 1  );
+            }
+            str_pos = array_string.find_first_of(',');
+            if(str_pos == jjson_str_t::npos && !array_string.empty())
+            {
+                trim_string(&array_string , " ");
+                jjson_array.Add(parse_from_string(array_string));
+                array_string.erase(0 , array_string.size());
+            }
+            else
+            {
+                trim_string(&array_string , " ");
+            }
+            
+        }
+        return jjson_array;
     }
 }

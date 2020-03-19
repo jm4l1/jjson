@@ -170,8 +170,9 @@ namespace jjson{
 
             jjson_str_t to_string() const;
             static value parse_from_string(const jjson_str_t &string_object);
-            static value decode_as_int(const jjson_str_t &string_object);
-            static value decode_as_float(const jjson_str_t &string_object);
+            static value parse_as_int(const jjson_str_t &string_object);
+            static value parse_as_float(const jjson_str_t &string_object);
+            static value parse_as_array(const jjson_str_t &string_object);
 
             void Add(const value& value);
     };
