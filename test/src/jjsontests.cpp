@@ -180,3 +180,17 @@ TEST_CASE("jjson value object constructor")
     jjson_object["null"] = nullptr;
     REQUIRE(jjson_object.to_string() == R"({"array":["test" , 5],"country":"Barbados","null":null,"object":{"bool":true,"int":12},"parish":"St. George","test":"new string"})");
 }
+TEST_CASE("jjson value object / array methods")
+{
+    const auto jjson_empty_object = jjson::Object();
+    const auto jjson_empty_array = jjson::Array();
+    const auto jjson_object = jjson::Object();
+    const auto jjson_array = jjson::Array({nullptr , false , true});
+    jjson_object["value"] = "test value";
+    REQUIRE(jjson_empty_array.len() == 0);
+    REQUIRE(jjson_empty_object.len() < 0);
+    REQUIRE(jjson_empty_array.is_empty() == true);
+    REQUIRE(jjson_empty_object.is_empty() == true);
+    REQUIRE(jjson_object.is_empty() == false);
+    REQUIRE(jjson_array.is_empty() == false);
+}

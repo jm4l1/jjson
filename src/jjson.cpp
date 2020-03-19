@@ -316,13 +316,27 @@ namespace jjson{
         }
         return (value&)member->second;
     }
-    size_t value::len() const
+    int value::len() const
     {
         if(this->jimpl_->type != value_type::ARRAY)
         {
             return -1;
         }
         return this->jimpl_->array_value->size();
+    };
+    bool value::is_empty() const
+    {
+        switch (this->jimpl_->type)
+        {
+        case value_type::ARRAY:
+            return this->jimpl_->array_value->empty();
+            break;
+        case value_type::OBJECT:
+            return this->jimpl_->object_value->empty();
+            break;
+        default:
+            return true;
+        }
     };
     value::value_type value::type() const
     {

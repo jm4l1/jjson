@@ -164,8 +164,9 @@ namespace jjson{
             bool operator==(const value &B)const;
             value&& operator[](int index)const;
             value& operator[](const jjson_str_t&& key) const;
-            size_t len() const;
+            int len() const;
             value_type type() const;
+            bool is_empty() const;
 
             ~value(); // destructor
             value(const value&);   // copy construtor
