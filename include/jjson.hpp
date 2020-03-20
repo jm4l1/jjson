@@ -49,12 +49,12 @@ namespace {
             string->erase(string->begin() + last_nws + 1  , string->end());
         }
     }
-    jjson_str_t dequote_string(const jjson_str_t quoted_string){
+    static jjson_str_t dequote_string(const jjson_str_t quoted_string){
         auto dequoted_string = quoted_string;
         trim_string(&dequoted_string , JJSON_DQUOTE );
         return dequoted_string;
     }
-    jjson_str_t to_escaped_string(const jjson_str_t unescaped_string , const jjson_str_t char_to_escape)
+    static jjson_str_t to_escaped_string(const jjson_str_t unescaped_string , const jjson_str_t char_to_escape)
     {
         auto escaped_string = unescaped_string;
         auto str_pos = escaped_string.find_first_of(char_to_escape);
@@ -90,6 +90,34 @@ namespace {
             str_pos = escaped_string.find_first_of(char_to_escape , str_pos + 2);
         }
         return escaped_string;
+    }
+    static size_t find_closing_brace(const jjson_str_t string ){
+        size_t pos = 0 ;
+        int open_count = 0;
+        for(
+            auto itr = string.begin() ;
+            itr != string.end() ;
+            ++itr
+        )
+        {
+            if(*itr == '['){
+                ++open_count;
+                ++pos;
+                continue;
+            }
+            if(*itr == ']' && open_count == 1)
+            {
+                return pos;
+            }
+            if(*itr == ']')
+            {
+                --open_count;
+                ++pos;
+                continue;
+            }
+            ++pos;
+        }
+        return jjson_str_t::npos;
     }
 }
 namespace jjson{
@@ -179,6 +207,7 @@ namespace jjson{
             static value parse_as_int(const jjson_str_t &string_object);
             static value parse_as_float(const jjson_str_t &string_object);
             static value parse_as_array(const jjson_str_t &string_object);
+            static value parse_as_object(const jjson_str_t &string_object);
 
             void Add(const value& value);
     };

@@ -218,7 +218,7 @@ namespace jjson{
                 ++itr
             )
             {
-                array_string +=  " , ";
+                array_string +=  ",";
                 array_string += itr->to_string();
             }
             array_string += ']';
@@ -476,6 +476,7 @@ namespace jjson{
             string_object[string_object.length() - 1] == '}'
         )
         {
+            return parse_as_object(string_object);
         }
         else if(
             !string_object.empty() &&
@@ -489,7 +490,8 @@ namespace jjson{
         return parse_as_int(string_object);
         // return value();
     }
-    value value::parse_as_array(const jjson_str_t &string_object){
+    value value::parse_as_array(const jjson_str_t &string_object)
+    {
         auto array_string = string_object;
         array_string.erase(array_string.end()-1);
         array_string.erase(array_string.begin());
@@ -501,33 +503,72 @@ namespace jjson{
             size_t str_pos; 
             if(array_string[0] == '[')
             {
-                auto array_end_pos = array_string.find_first_of(']');
+                auto array_end_pos = find_closing_brace(array_string);
                 auto nested_array_str = jjson_str_t(array_string , 0 , array_end_pos + 1 );
                 trim_string(&nested_array_str , " ");
                 jjson_array.Add(parse_as_array(nested_array_str));
                 array_string.erase(0 , array_end_pos + 1  );
-            }
-            else
-            {
                 str_pos = array_string.find_first_of(',');
-                auto substr = jjson_str_t(array_string , 0 , str_pos );
-                trim_string(&substr , " ");
-                jjson_array.Add(parse_from_string(substr));
                 array_string.erase(0 , str_pos + 1  );
+                continue;
             }
             str_pos = array_string.find_first_of(',');
-            if(str_pos == jjson_str_t::npos && !array_string.empty())
+            if(str_pos == jjson_str_t::npos)
             {
-                trim_string(&array_string , " ");
                 jjson_array.Add(parse_from_string(array_string));
-                array_string.erase(0 , array_string.size());
+                array_string.erase(0 , str_pos );
+                trim_string(&array_string , " ");
             }
             else
             {
-                trim_string(&array_string , " ");
+                auto substr = jjson_str_t(array_string , 0 , str_pos );
+                array_string.erase(0 , str_pos + 1  );
+                trim_string(&substr , " ");
+                jjson_array.Add(parse_from_string(substr));
             }
-            
         }
         return jjson_array;
+    }
+    value value::parse_as_object(const jjson_str_t &string_object)
+    {
+        auto object_string = string_object;
+        object_string.erase(object_string.end()-1);
+        object_string.erase(object_string.begin());
+        trim_string(&object_string , " ");
+        auto jjson_object = value(value_type::OBJECT);
+        while(!object_string.empty())
+        {
+            // trim_string(&object_string , " ");
+            // size_t str_pos; 
+            // if(object_string[0] == '{')
+            // {
+            //     auto array_end_pos = object_string.find_first_of('}');
+            //     auto nested_array_str = jjson_str_t(object_string , 0 , array_end_pos + 1 );
+            //     trim_string(&nested_array_str , " ");
+            //     jjson_object.Add(parse_as_array(nested_array_str));
+            //     object_string.erase(0 , array_end_pos + 1  );
+            // }
+            // else
+            // {
+            //     str_pos = object_string.find_first_of(',');
+            //     auto substr = jjson_str_t(object_string , 0 , str_pos );
+            //     trim_string(&substr , " ");
+            //     jjson_object.Add(parse_from_string(substr));
+            //     object_string.erase(0 , str_pos + 1  );
+            // }
+            // str_pos = object_string.find_first_of(',');
+            // if(str_pos == jjson_str_t::npos && !object_string.empty())
+            // {
+            //     trim_string(&object_string , " ");
+            //     jjson_object.Add(parse_from_string(object_string));
+            //     object_string.erase(0 , object_string.size());
+            // }
+            // else
+            // {
+            //     trim_string(&object_string , " ");
+            // }
+            
+        }
+        return jjson_object;
     }
 }
