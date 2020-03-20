@@ -91,25 +91,59 @@ namespace {
         }
         return escaped_string;
     }
-    static size_t find_closing_brace(const jjson_str_t string ){
+    static size_t find_closing_char(const jjson_str_t string , const char opening , const char closing ){
         size_t pos = 0 ;
         int open_count = 0;
+        bool in_quotes = false;
+        bool escaped = false;
         for(
             auto itr = string.begin() ;
             itr != string.end() ;
             ++itr
         )
         {
-            if(*itr == '['){
+            if(*itr == '\\')
+            {
+                escaped = !escaped;
+                ++pos;
+                continue;
+            }
+            if((*itr == '"') && escaped)
+            {
+                ++pos;
+                continue;
+            }
+            if(*itr == '"' && (closing != '"'))
+            {
+                in_quotes = !in_quotes;
+                ++pos;
+                continue;
+            }
+            if(
+                (*itr == opening) && 
+                !in_quotes && 
+                ( 
+                    ((closing == '"') && 
+                     (open_count == 0)
+                    ) ||
+                    (closing != '"'
+                ))
+            )
+            {
                 ++open_count;
                 ++pos;
                 continue;
             }
-            if(*itr == ']' && open_count == 1)
+             if((*itr == closing) && in_quotes && (closing != '"'))
+            {
+                ++pos;
+                continue;
+            }
+            if((*itr == closing) && (open_count == 1))
             {
                 return pos;
             }
-            if(*itr == ']')
+            if((*itr == closing) && !in_quotes)
             {
                 --open_count;
                 ++pos;
@@ -117,6 +151,56 @@ namespace {
             }
             ++pos;
         }
+        return jjson_str_t::npos;
+    }
+    static size_t find_end_of_member(const jjson_str_t string ){
+        size_t pos = 0 ;
+        char end_char = ',';
+        bool in_quotes = false;
+        size_t open_brace = 0;
+        size_t open_curly = 0;
+        for(
+            auto itr = string.begin() ;
+            itr != string.end() ;
+            ++itr
+        ){
+            if(*itr == '"' && ( (open_brace % 2)  == 0 ) && ( (open_curly % 2)  == 0 ))
+            {
+                in_quotes = !in_quotes;
+                ++pos;
+                continue;
+            }
+            if(*itr == '{' && (!in_quotes))
+            {
+                ++open_curly;
+                ++pos;
+                continue;
+            }
+            if(*itr == '}' && (!in_quotes))
+            {
+                --open_curly;
+                ++pos;
+                continue;
+            }
+            if(*itr == '[' && (!in_quotes))
+            {
+                ++open_brace;
+                ++pos;
+                continue;
+            }
+            if(*itr == ']' && (!in_quotes))
+            {
+                --open_brace;
+                ++pos;
+                continue;
+            }
+            if((*itr == end_char) && !in_quotes && (( open_brace % 2 ) == 0) && (( open_curly % 2 ) == 0))
+            {
+                return pos;
+            }
+            ++pos;
+        }
+
         return jjson_str_t::npos;
     }
 }
@@ -202,6 +286,8 @@ namespace jjson{
             value& operator=(const value&);    // copy assignment
             value& operator=(value&&);         // move assignment
 
+            friend std::ostream& operator<<(std::ostream& out , const value&);
+            
             jjson_str_t to_string() const;
             static value parse_from_string(const jjson_str_t &string_object);
             static value parse_as_int(const jjson_str_t &string_object);

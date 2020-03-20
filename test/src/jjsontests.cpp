@@ -127,9 +127,10 @@ TEST_CASE("jjson value array constructor")
     const auto jjson_array2 = jjson::Array({ true , nullptr ,false });
     const auto jjson_array3 = jjson::Array({ "duck" , (int64_t)2 ,"goose" });
     const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
-    const auto jjson_nested_array = jjson::Array({ "duck" , (int64_t)2 , jjson_array4 });
+    auto jjson_nested_array = jjson::Array({ "duck" , (int64_t)2 , jjson_array4 });
     const auto jjson_empty_array =jjson::Array({});
     const auto jjson_nested_empty_array =jjson::Array({jjson_empty_array,jjson_empty_array,jjson_empty_array});
+    const auto jjson_object_object= jjson::value::parse_from_string(R"({"object1":{},"object2":{"key":"val","array":[{},"string",true]}})");
     REQUIRE(jjson_array.to_string() == R"([1,2,3])");
     REQUIRE(jjson_array2.to_string() == R"([true,null,false])");
     REQUIRE(jjson_array3.to_string() == R"(["duck",2,"goose"])");
@@ -143,6 +144,9 @@ TEST_CASE("jjson value array constructor")
     REQUIRE(jjson::value::parse_from_string( R"([1,2,3])").to_string() == R"([1,2,3])");
     REQUIRE(jjson::value::parse_from_string( R"([[1,[2]],[3,[4]],[],2,12.2,"test"])").to_string() == R"([[1,[2]],[3,[4]],[],2,12.2,"test"])");
     REQUIRE(jjson::value::parse_from_string( R"([[[[[1,[2,[[[4]]]]]]]]])").to_string() == R"([[[[[1,[2,[[[4]]]]]]]]])");
+    REQUIRE(jjson::value::parse_from_string( R"([[[[[1,[2,[[[4],"[t{e}r]"]]]]]]],{}])").to_string() == R"([[[[[1,[2,[[[4],"[t{e}r]"]]]]]]],{}])");
+    jjson_nested_array.Add(jjson_object_object);
+    REQUIRE(jjson_nested_array.to_string() == R"(["duck",2,["test",5],{"object1":{},"object2":{"array":[{},"string",true],"key":"val"}}])");
 }
 TEST_CASE("jjson value parse array")
 {
@@ -181,6 +185,27 @@ TEST_CASE("jjson value object constructor")
     jjson_object["parish"] = "St. George";
     jjson_object["null"] = nullptr;
     REQUIRE(jjson_object.to_string() == R"({"array":["test",5],"country":"Barbados","null":null,"object":{"bool":true,"int":12},"parish":"St. George","test":"new string"})");
+}
+TEST_CASE("jjson object parse from string")
+{
+    auto jjson_empty_object = jjson::value::parse_from_string(R"({})");
+    auto jjson_object_int =   jjson::value::parse_from_string(R"({"int":6})");
+    auto jjson_object_float = jjson::value::parse_from_string(R"({"float":6.00})");
+    auto jjson_object_null =  jjson::value::parse_from_string(R"({"null":null})");
+    auto jjson_object_bool =  jjson::value::parse_from_string(R"({"bool":false})");
+    auto jjson_object_string= jjson::value::parse_from_string(R"({"string":"string"})");
+    auto jjson_object_array = jjson::value::parse_from_string(R"({"array":[1,2,3]})");
+    auto jjson_object_object= jjson::value::parse_from_string(R"({"object1":{},"object2":{"key":"val","array":[{},"string",true]}})");
+    auto jjson_object_mixes = jjson::value::parse_from_string(R"({"string":"string","int" : 10})");
+    REQUIRE(jjson_empty_object.to_string() == R"({})");
+    REQUIRE(jjson_object_int.to_string() == R"({"int":6})");
+    REQUIRE(jjson_object_float.to_string() == R"({"float":6})");
+    REQUIRE(jjson_object_null.to_string() == R"({"null":null})");
+    REQUIRE(jjson_object_bool.to_string() == R"({"bool":false})");
+    REQUIRE(jjson_object_string.to_string() == R"({"string":"string"})");
+    REQUIRE(jjson_object_array.to_string() == R"({"array":[1,2,3]})");
+    REQUIRE(jjson_object_object.to_string() == R"({"object1":{},"object2":{"array":[{},"string",true],"key":"val"}})");
+    REQUIRE(jjson_object_mixes.to_string() == R"({"int":10,"string":"string"})");
 }
 TEST_CASE("jjson value object / array methods")
 {
