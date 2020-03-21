@@ -221,3 +221,21 @@ TEST_CASE("jjson value object / array methods")
     REQUIRE(jjson_object.is_empty() == false);
     REQUIRE(jjson_array.is_empty() == false);
 }
+TEST_CASE("jjson vale invalid formats")
+{
+    REQUIRE(jjson::value::parse_from_string( R"(+)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(-)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(*)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(+0)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(00)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(00.123)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(00.12.3)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(")").to_string()== JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"("unclosed string)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"(["unclosed array")").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect")").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect":6)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect":"123)").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect": {123 , array : "" })").to_string() == JJSON_INVALD );
+    REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect": 123 , "array" : [1,2 ,{}] , "te" : })").to_string() == JJSON_INVALD );
+}

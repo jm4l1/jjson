@@ -90,6 +90,8 @@ namespace jjson{
     };
     value::value(value&& B)        // move construtor
     :jimpl_(new impl){
+        jimpl_.release();
+        jimpl_ = std::exchange(B.jimpl_ , nullptr);
     };
     void value::Add(const value& value)
     {
@@ -101,6 +103,10 @@ namespace jjson{
     }
     value& value::operator=(const value& B)    // copy assignment
     {
+        if(this == &B)
+        {
+            return *this;
+        }
         jimpl_.reset(new impl());
         this->jimpl_->type = B.jimpl_->type;
         switch (this->jimpl_->type)
@@ -135,36 +141,12 @@ namespace jjson{
     };
     value& value::operator=(value&& B)            // move assignment
     {
-        jimpl_.reset(new impl());;
-        this->jimpl_->type = B.jimpl_->type;
-        switch (this->jimpl_->type)
+        if(this == &B)
         {
-        case value_type::ARRAY:
-            this->jimpl_->array_value = new std::vector<value>;
-            *(this->jimpl_->array_value) = *(B.jimpl_->array_value);
-            break;
-        case value_type::OBJECT:
-            this->jimpl_->object_value = new jjson_object;
-            *(this->jimpl_->object_value) = *(B.jimpl_->object_value);
-            break;
-        case value_type::STRING:
-            this->jimpl_->string_value = new jjson_str_t;
-            *(this->jimpl_->string_value) = *(B.jimpl_->string_value);
-            break;
-        case value_type::BOOLEAN:
-            this->jimpl_->boolean_value = B.jimpl_->boolean_value;
-            break;
-        case value_type::FLOAT:
-            this->jimpl_->float_value = B.jimpl_->float_value;
-            this->jimpl_->exponent = B.jimpl_->exponent;
-            break;
-        case value_type::INT:
-            this->jimpl_->int_value = B.jimpl_->int_value;
-            this->jimpl_->exponent = B.jimpl_->exponent;
-            break;
-        default:
-            break;
+            return *this;
         }
+        jimpl_.release();
+        jimpl_ = std::exchange(B.jimpl_ , nullptr);
         return *this;
     }
     value Array(std::initializer_list<value> values)
@@ -463,6 +445,8 @@ namespace jjson{
             string_object[string_object.length() - 1] == '"'
             )
         {
+            if(string_object == JJSON_DQUOTE)
+             return value();
             return value(dequote_string(string_object));
         }
         else if(
@@ -492,7 +476,6 @@ namespace jjson{
             return parse_as_float(string_object);
         }
         return parse_as_int(string_object);
-        // return value();
     }
     value value::parse_as_array(const jjson_str_t &string_object)
     {
@@ -519,7 +502,13 @@ namespace jjson{
             str_pos = array_string.find_first_of(',');
             if(str_pos == jjson_str_t::npos)
             {
-                jjson_array.Add(parse_from_string(array_string));
+                auto v = parse_from_string(array_string);
+                if(v.jimpl_->type == value_type::INVALID)
+                {
+                    return value();
+                }
+                jjson_array.Add(v);
+                // jjson_array.Add(parse_from_string(array_string));
                 array_string.erase(0 , str_pos );
                 trim_string(&array_string , " ");
             }
@@ -527,8 +516,14 @@ namespace jjson{
             {
                 auto substr = jjson_str_t(array_string , 0 , str_pos );
                 array_string.erase(0 , str_pos + 1  );
-                trim_string(&substr , " ");
-                jjson_array.Add(parse_from_string(substr));
+                trim_string(&substr , " ");  
+                auto v = parse_from_string(substr);
+                if(v.jimpl_->type == value_type::INVALID)
+                {
+                    return value();
+                }
+                jjson_array.Add(v);
+                // jjson_array.Add(parse_from_string(substr));
             }
         }
         return jjson_array;
@@ -571,6 +566,10 @@ namespace jjson{
             if(str_pos == jjson_str_t::npos)
             {
                 auto member = parse_as_member(object_string);
+                if(member.second.jimpl_->type == value_type::INVALID)
+                {
+                    return value();
+                }
                 jjson_object[std::string(member.first)] = member.second;
                 object_string.erase(0 , str_pos );
                 trim_string(&object_string , " ");
@@ -581,6 +580,10 @@ namespace jjson{
                 object_string.erase(0 , str_pos + 1  );
                 trim_string(&substr , " ");
                 auto member = parse_as_member(substr);
+                if(member.second.jimpl_->type == value_type::INVALID)
+                {
+                    return value();
+                }
                 jjson_object[std::string(member.first)] = member.second;
             }
             
