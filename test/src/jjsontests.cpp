@@ -221,7 +221,7 @@ TEST_CASE("jjson value object / array methods")
     REQUIRE(jjson_object.is_empty() == false);
     REQUIRE(jjson_array.is_empty() == false);
 }
-TEST_CASE("jjson vale invalid formats")
+TEST_CASE("jjson value invalid formats")
 {
     REQUIRE(jjson::value::parse_from_string( R"(+)").to_string() == JJSON_INVALD );
     REQUIRE(jjson::value::parse_from_string( R"(-)").to_string() == JJSON_INVALD );
@@ -238,4 +238,49 @@ TEST_CASE("jjson vale invalid formats")
     REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect":"123)").to_string() == JJSON_INVALD );
     REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect": {123 , array : "" })").to_string() == JJSON_INVALD );
     REQUIRE(jjson::value::parse_from_string( R"({"unclosed obect": 123 , "array" : [1,2 ,{}] , "te" : })").to_string() == JJSON_INVALD );
+}
+TEST_CASE("jjson RFC8259 examples")
+{
+    jjson_str_t rfc8259_json_object = R"({
+        "Image": {
+            "Width":  800,
+            "Height": 600,
+            "Title":  "View from 15th Floor",
+            "Thumbnail": {
+                "Url":    "http://www.example.com/image/481989943",
+                "Height": 125,
+                "Width":  100
+            },
+            "Animated" : false,
+            "IDs": [116, 943, 234, 38793]
+          }
+      })";
+    jjson_str_t rfc8259_json_array = R"([
+        {
+           "precision": "zip",
+           "Latitude":  37.7668,
+           "Longitude": -122.3959,
+           "Address":   "",
+           "City":      "SAN FRANCISCO",
+           "State":     "CA",
+           "Zip":       "94107",
+           "Country":   "US"
+        },
+        {
+           "precision": "zip",
+           "Latitude":  37.371991,
+           "Longitude": -122.026020,
+           "Address":   "",
+           "City":      "SUNNYVALE",
+           "State":     "CA",
+           "Zip":       "94085",
+           "Country":   "US"
+        }
+      ])";
+      REQUIRE(jjson::value::parse_from_string(rfc8259_json_object).is_valid());
+      REQUIRE(jjson::value::parse_from_string(rfc8259_json_array).is_valid());
+      REQUIRE(jjson::value::parse_from_string(rfc8259_json_object).type() == jjson::value::value_type::OBJECT);
+      REQUIRE(jjson::value::parse_from_string(rfc8259_json_array).type() == jjson::value::value_type::ARRAY);
+      REQUIRE(jjson::value::parse_from_string(rfc8259_json_object)["Image"]["IDs"].type() == jjson::value::value_type::ARRAY);
+      REQUIRE(jjson::value::parse_from_string(rfc8259_json_array)[0].type() == jjson::value::value_type::OBJECT);
 }

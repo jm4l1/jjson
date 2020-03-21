@@ -324,6 +324,10 @@ namespace jjson{
             return true;
         }
     };
+    bool value::is_valid() const
+    {
+        return this->type()  != value_type::INVALID;
+    };
     value::value_type value::type() const
     {
         return this->jimpl_->type;
@@ -482,24 +486,24 @@ namespace jjson{
         auto array_string = string_object;
         array_string.erase(array_string.end()-1);
         array_string.erase(array_string.begin());
-        trim_string(&array_string , " ");
+        trim_string(&array_string , " \n\r\t");
         auto jjson_array = value(value_type::ARRAY);
         while(!array_string.empty())
         {
-            trim_string(&array_string , " ");
+            trim_string(&array_string , " \n\r\t");
             size_t str_pos; 
             if(array_string[0] == '[')
             {
                 auto array_end_pos = find_closing_char(array_string , '[' , ']');
                 auto nested_array_str = jjson_str_t(array_string , 0 , array_end_pos + 1 );
-                trim_string(&nested_array_str , " ");
+                trim_string(&nested_array_str , " \n\r\t");
                 jjson_array.Add(parse_as_array(nested_array_str));
                 array_string.erase(0 , array_end_pos + 1  );
                 str_pos = array_string.find_first_of(',');
                 array_string.erase(0 , str_pos + 1  );
                 continue;
             }
-            str_pos = array_string.find_first_of(',');
+            str_pos =  find_end_of_member(array_string);
             if(str_pos == jjson_str_t::npos)
             {
                 auto v = parse_from_string(array_string);
@@ -508,22 +512,20 @@ namespace jjson{
                     return value();
                 }
                 jjson_array.Add(v);
-                // jjson_array.Add(parse_from_string(array_string));
                 array_string.erase(0 , str_pos );
-                trim_string(&array_string , " ");
+                trim_string(&array_string , " \n\r\t");
             }
             else
             {
                 auto substr = jjson_str_t(array_string , 0 , str_pos );
                 array_string.erase(0 , str_pos + 1  );
-                trim_string(&substr , " ");  
+                trim_string(&substr , " \n\r\t");  
                 auto v = parse_from_string(substr);
                 if(v.jimpl_->type == value_type::INVALID)
                 {
                     return value();
                 }
                 jjson_array.Add(v);
-                // jjson_array.Add(parse_from_string(substr));
             }
         }
         return jjson_array;
@@ -532,11 +534,11 @@ namespace jjson{
     {
         auto key_end_pos = find_closing_char(string_object , '"' ,'"');
         auto key = jjson_str_t(string_object , 1 , key_end_pos - 1);
-        trim_string(&key , " ");
+        trim_string(&key , " \n\r\t");
         auto val_string = jjson_str_t(string_object , key_end_pos  + 1 , string_object.size() - key_end_pos );
-        trim_string(&val_string , " ");
+        trim_string(&val_string , " \n\r\t");
         val_string.erase(0,1);
-        trim_string(&val_string , " ");
+        trim_string(&val_string , " \n\r\t");
         auto val = jjson::value::parse_from_string(val_string);
         return std::make_pair(key , val);
     }
@@ -545,17 +547,17 @@ namespace jjson{
         auto object_string = string_object;
         object_string.erase(object_string.end()-1);
         object_string.erase(object_string.begin());
-        trim_string(&object_string , " ");
+        trim_string(&object_string , " \n\r\t");
         auto jjson_object = value(value_type::OBJECT);
         while(!object_string.empty())
         {
-            trim_string(&object_string , " ");
+            trim_string(&object_string , " \n\r\t");
             size_t str_pos; 
             if(object_string[0] == '{')
             {
                 auto object_end_pos = find_closing_char(object_string , '{' , '}');
                 auto nested_object_str = jjson_str_t(object_string , 0 , object_end_pos + 1 );
-                trim_string(&nested_object_str , " ");
+                trim_string(&nested_object_str , " \n\r\t");
                 jjson_object.Add(parse_as_object(nested_object_str));
                 object_string.erase(0 , object_end_pos + 1  );
                 str_pos = object_string.find_first_of(',');
@@ -572,13 +574,13 @@ namespace jjson{
                 }
                 jjson_object[std::string(member.first)] = member.second;
                 object_string.erase(0 , str_pos );
-                trim_string(&object_string , " ");
+                trim_string(&object_string , " \n\r\t");
             }
             else
             {
                 auto substr = jjson_str_t(object_string , 0 , str_pos);
                 object_string.erase(0 , str_pos + 1  );
-                trim_string(&substr , " ");
+                trim_string(&substr , " \n\r\t");
                 auto member = parse_as_member(substr);
                 if(member.second.jimpl_->type == value_type::INVALID)
                 {

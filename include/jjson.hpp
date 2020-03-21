@@ -51,7 +51,8 @@ namespace {
     }
     static jjson_str_t dequote_string(const jjson_str_t quoted_string){
         auto dequoted_string = quoted_string;
-        trim_string(&dequoted_string , JJSON_DQUOTE );
+        dequoted_string.erase(dequoted_string.end()-1);
+        dequoted_string.erase(dequoted_string.begin());
         return dequoted_string;
     }
     static jjson_str_t to_escaped_string(const jjson_str_t unescaped_string , const jjson_str_t char_to_escape)
@@ -164,7 +165,7 @@ namespace {
             itr != string.end() ;
             ++itr
         ){
-            if(*itr == '"' && ( (open_brace % 2)  == 0 ) && ( (open_curly % 2)  == 0 ))
+            if(*itr == '"' && ( open_brace  == 0 ) && ( open_curly % 2 == 0 ))
             {
                 in_quotes = !in_quotes;
                 ++pos;
@@ -194,7 +195,7 @@ namespace {
                 ++pos;
                 continue;
             }
-            if((*itr == end_char) && !in_quotes && (( open_brace % 2 ) == 0) && (( open_curly % 2 ) == 0))
+            if((*itr == end_char) && !in_quotes && ( open_brace  == 0) && ( open_curly  == 0))
             {
                 return pos;
             }
@@ -278,6 +279,7 @@ namespace jjson{
             value& operator[](const jjson_str_t&& key) const;
             int len() const;
             value_type type() const;
+            bool is_valid() const;
             bool is_empty() const;
 
             ~value(); // destructor
