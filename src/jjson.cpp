@@ -166,34 +166,51 @@ namespace jjson{
     value::~value()
     {
     };
-    jjson_str_t value::to_string() const
+    jjson_str_t value::to_string(bool pretty_format , int indent_level) const
     {
+        indent_level++;
         jjson_str_t exponent_string;
         std::stringstream float_stream;
         jjson_str_t array_string ;
         jjson_str_t object_string ;
+        jjson_str_t bool_string;
+        jjson_str_t string_string;
+        jjson_str_t null_string = JJSON_NULL;
+        auto string_quote = "\"";
+        auto color_reset = pretty_format ? "\033[0m" : "";
+        auto null_color = pretty_format ? "\033[1;30m" : color_reset ;
+        auto bool_color = pretty_format ? "\033[1;35m" : color_reset ;
+        auto number_color = pretty_format ? "\033[0;32m" : color_reset ;
+        auto string_color = pretty_format ? "\033[0;31m" : color_reset ;
+        auto brace_color = pretty_format ? "\033[1;37m" : color_reset ;
+        jjson_str_t open_curly = brace_color + jjson_str_t("{")  + color_reset;
+        jjson_str_t close_curly = brace_color + jjson_str_t("}")  + color_reset;
+        jjson_str_t open_square_brace = brace_color + jjson_str_t("[")  + (pretty_format ? " " : "") + color_reset;
+        jjson_str_t close_square_brace = brace_color + jjson_str_t(pretty_format ? " " : "") + jjson_str_t("]")  + color_reset;
         switch (jimpl_->type)
         {
         case value_type::Null:
-            return JJSON_NULL;
+            return null_color + null_string + color_reset;
         case value_type::BOOLEAN:
-            return jimpl_->boolean_value ? JJSON_TRUE : JJSON_FALSE;
+            bool_string = (jimpl_->boolean_value ? JJSON_TRUE : JJSON_FALSE);
+            return  bool_color + bool_string + color_reset;
         case value_type::STRING:
-            return '\"'+  to_escaped_string(*jimpl_->string_value , JJSON_ESCAPE_CHARACTERS) + '\"';    
+            string_string += string_quote ;
+            return  string_color +  string_string + to_escaped_string(*jimpl_->string_value , JJSON_ESCAPE_CHARACTERS) + string_quote + color_reset ;    
         case value_type::INT:
             exponent_string = ( jimpl_->exponent == 0 ? "" : "e" + std::to_string(jimpl_->exponent));
-            return std::to_string(jimpl_->int_value) + exponent_string ;    
+            return number_color + std::to_string(jimpl_->int_value) + exponent_string + color_reset ;    
         case value_type::FLOAT:
             float_stream << jimpl_->float_value ;
             exponent_string = ( jimpl_->exponent == 0 ? "" : "e" + std::to_string(jimpl_->exponent));
-            return float_stream.str() + exponent_string ;
+            return number_color +  float_stream.str() + exponent_string + color_reset ;
         case value_type::ARRAY:
             if(jimpl_->array_value->empty())
             {
-                return "[]";
+                return open_square_brace + close_square_brace;
             }
-            array_string += '[';
-            array_string += jimpl_->array_value->begin()->to_string();
+            array_string += open_square_brace;
+            array_string += jimpl_->array_value->begin()->to_string(pretty_format , indent_level);
             for(
                 auto itr = jimpl_->array_value->begin() + 1;
                 itr != jimpl_->array_value->end();
@@ -201,29 +218,41 @@ namespace jjson{
             )
             {
                 array_string +=  ",";
-                array_string += itr->to_string();
+                array_string += itr->to_string(pretty_format , indent_level);
             }
-            array_string += ']';
+            array_string += close_square_brace;
             return array_string;
         case value_type::OBJECT:
             if(jimpl_->object_value->empty())
             {
-                return "{}";
+                return open_curly + close_curly;
             }
-            object_string += "{";
+            object_string += open_curly;
             for(
                 auto itr = jimpl_->object_value->begin() ;
                 itr != jimpl_->object_value->end() ;
                 // ++itr
             )
             {
-                object_string +=  JJSON_DQUOTE +  itr->first +  JJSON_DQUOTE + ":" + itr->second.to_string();
+                if(pretty_format) object_string += '\n';
+                if(pretty_format)
+                {
+                    for(auto i = 0 ; i < indent_level ; i++)
+                        object_string += "  ";
+                }
+                object_string +=  JJSON_DQUOTE +  itr->first +  JJSON_DQUOTE + ( pretty_format ? " : " : ":") + itr->second.to_string(pretty_format , indent_level);
                 if(++itr != jimpl_->object_value->end())
                 {
                     object_string += ",";
                 }
             }
-            object_string += "}";
+                if(pretty_format) object_string += '\n';
+                if(pretty_format)
+                {
+                    for(auto i = 0 ; i < indent_level - 1 ; i++)
+                        object_string += "  ";
+                }
+            object_string += close_curly;
             return object_string;
         default:
             return JJSON_INVALD;

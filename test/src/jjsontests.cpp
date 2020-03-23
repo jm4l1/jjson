@@ -276,9 +276,73 @@ TEST_CASE("jjson RFC8259 examples")
            "Zip":       "94085",
            "Country":   "US"
         }
-      ])";
+    ])";
+    jjson_str_t wikipedia_example_json = R"({
+        "firstName": "John",
+        "lastName": "Smith",
+        "isAlive": true,
+        "age": 27,
+        "address": {
+            "streetAddress": "21 2nd Street",
+            "city": "New York",
+            "state": "NY",
+            "postalCode": "10021-3100"
+        },
+        "phoneNumbers": [
+            {
+            "type": "home",
+            "number": "212 555-1234"
+            },
+            {
+            "type": "office",
+            "number": "646 555-4567"
+            }
+        ],
+        "children": [],
+        "spouse": null
+    })";
+    jjson_str_t wikipedia_example_schema= R"({
+        "$schema": "http://json-schema.org/draft/2019-09/schema",
+        "title": "Product",
+        "type": "object",
+        "required": ["id", "name", "price"],
+        "properties": {
+            "id": {
+            "type": "number",
+            "description": "Product identifier"
+            },
+            "name": {
+            "type": "string",
+            "description": "Name of the product"
+            },
+            "price": {
+            "type": "number",
+            "minimum": 0
+            },
+            "tags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+            },
+            "stock": {
+            "type": "object",
+            "properties": {
+                "warehouse": {
+                "type": "number"
+                },
+                "retail": {
+                "type": "number"
+                }
+            }
+            }
+        }
+    })";
+
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_object).is_valid());
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_array).is_valid());
+      REQUIRE(jjson::value::parse_from_string(wikipedia_example_json).is_valid());
+      REQUIRE(jjson::value::parse_from_string(wikipedia_example_schema).is_valid());
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_object).type() == jjson::value::value_type::OBJECT);
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_array).type() == jjson::value::value_type::ARRAY);
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_object)["Image"]["IDs"].type() == jjson::value::value_type::ARRAY);

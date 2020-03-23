@@ -290,7 +290,7 @@ namespace jjson{
 
             friend std::ostream& operator<<(std::ostream& out , const value&);
             
-            jjson_str_t to_string() const;
+            jjson_str_t to_string(bool pretty_format = false , int indent_level =  0) const;
             static value parse_from_string(const jjson_str_t &string_object);
             static value parse_as_int(const jjson_str_t &string_object);
             static value parse_as_float(const jjson_str_t &string_object);
