@@ -31,13 +31,13 @@ TEST_CASE("jjson value default constructor default")
 }
 TEST_CASE("jjson value null constructor")
 {
-    auto jjson_null = jjson::value(nullptr);
+    jjson::value jjson_null = null;
     REQUIRE(jjson_null.to_string()== JJSON_NULL);
 }
 TEST_CASE("jjson value null to string")
 {
     const auto jjson_null = jjson::value::parse_from_string(JJSON_NULL);
-    REQUIRE(jjson_null == nullptr);
+    REQUIRE(jjson_null == null);
 }
 TEST_CASE("jjson value bool constructor")
 {
@@ -124,7 +124,7 @@ TEST_CASE("jjson value parse number invalid number")
 TEST_CASE("jjson value array constructor")
 {
     const auto jjson_array = jjson::Array({ (int64_t)1 , (int64_t)2 ,(double)3.00 });
-    const auto jjson_array2 = jjson::Array({ true , nullptr ,false });
+    const auto jjson_array2 = jjson::Array({ true , null ,false });
     const auto jjson_array3 = jjson::Array({ "duck" , (int64_t)2 ,"goose" });
     const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
     auto jjson_nested_array = jjson::Array({ "duck" , (int64_t)2 , jjson_array4 });
@@ -183,7 +183,7 @@ TEST_CASE("jjson value object constructor")
     jjson_object["array"] = jjson_array4;
     jjson_object["object"] = jjson_empty_object;
     jjson_object["parish"] = "St. George";
-    jjson_object["null"] = nullptr;
+    jjson_object["null"] = null;
     REQUIRE(jjson_object.to_string() == R"({"array":["test",5],"country":"Barbados","null":null,"object":{"bool":true,"int":12},"parish":"St. George","test":"new string"})");
 }
 TEST_CASE("jjson object parse from string")
@@ -212,7 +212,7 @@ TEST_CASE("jjson value object / array methods")
     const auto jjson_empty_object = jjson::Object();
     const auto jjson_empty_array = jjson::Array();
     const auto jjson_object = jjson::Object();
-    const auto jjson_array = jjson::Array({nullptr , false , true});
+    const auto jjson_array = jjson::Array({null , false , true});
     jjson_object["value"] = "test value";
     REQUIRE(jjson_empty_array.len() == 0);
     REQUIRE(jjson_empty_object.len() < 0);

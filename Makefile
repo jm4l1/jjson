@@ -3,7 +3,7 @@ CPPFLAGS= -std=c++17 -stdlib=libc++ -g
 SRCDIR := src
 BUILDDIR := build
 TESTDIR := test
-TARGET := main
+TARGET := tests
 
 SRCEXT := cpp
 SOURCES := $(shell find $(SRCDIR) -type f -name "*.$(SRCEXT)")
@@ -16,8 +16,8 @@ TESTOBJECTS := $(patsubst $(TESTDIR)/$(SRCDIR)/%,$(TESTDIR)/%,$(TESTSOURCES:.$(S
 INC := -I ../include
 
 
-$(TARGET) : $(TARGET).o $(OBJECTS)
-	$(CC) $(CPPFLAGS) $(TARGET).o $(OBJECTS) -o bin/$@
+# $(TARGET) : $(TARGET).o $(OBJECTS)
+# 	$(CC) $(CPPFLAGS) $(TARGET).o $(OBJECTS) -o bin/$@
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
 	$(CC) $(CPPFLAGS) -c $(INC) $< -o $@
 $(TARGET).o : $(TARGET).cpp

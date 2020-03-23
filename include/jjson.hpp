@@ -33,6 +33,7 @@
 #define JJSON_ESCAPE_CHARACTERS "\\\"/\b\f\n\t\r"
 #define JJSON_MIN_INT  ( pow( 2 , 53 ) * -1) + 1
 #define JJSON_MAX_INT  ( pow( 2 , 53 )  - 1 )
+#define null nullptr
 // auto white_space = jjson_str_t("") + JJSON_HORIZONTAL_TAB + JJSON_NEW_LINE + JJSON_SPACE + JJSON_CARRIAGE_RETURN ;
 namespace {
     typedef std::string jjson_str_t;

@@ -91,7 +91,7 @@ namespace jjson{
     value::value(value&& B)        // move construtor
     :jimpl_(new impl){
         jimpl_.release();
-        jimpl_ = std::exchange(B.jimpl_ , nullptr);
+        jimpl_ = std::exchange(B.jimpl_ , null);
     };
     void value::Add(const value& value)
     {
@@ -146,7 +146,7 @@ namespace jjson{
             return *this;
         }
         jimpl_.release();
-        jimpl_ = std::exchange(B.jimpl_ , nullptr);
+        jimpl_ = std::exchange(B.jimpl_ , null);
         return *this;
     }
     value Array(std::initializer_list<value> values)
@@ -292,19 +292,19 @@ namespace jjson{
         if(this->jimpl_->type != value_type::ARRAY)
         {
             auto v = new value();
-            v = nullptr; 
+            v = null; 
             return std::move(*v);
         }
         if(index < 0)
         {
             auto v = new value();
-            v = nullptr; 
+            v = null; 
             return std::move(*v);
         }
         if(index > this->jimpl_->array_value->size())
         {
             auto v = new value();
-            v = nullptr; 
+            v = null; 
             return std::move(*v);
         }
         return std::move((*this->jimpl_->array_value)[index]);
@@ -314,7 +314,7 @@ namespace jjson{
         if(this->jimpl_->type != value_type::OBJECT)
         {
             auto v = new value();
-            v = nullptr; 
+            v = null; 
             return (value&)*v;
         }
         auto member = this->jimpl_->object_value->find(key);
@@ -462,7 +462,7 @@ namespace jjson{
     {
         if(string_object == JJSON_NULL)
         {
-            return value(nullptr);
+            return value(null);
         }
         else if (string_object == JJSON_TRUE)
         {
