@@ -10,8 +10,8 @@ A simple Make file is provided to build test and library. Operation CMAKE files 
 JSON values are created by call to `jjson::value`
 - null  - `null` value is defined as macro to `nullptr`
 ```c++
- jjson::value null_value = null;             //null 
- auto null_value = jjson::value(null);       //null
+ jjson::value null_value = null;     //null 
+ auto null_value = jjson::value(null);  //null
  jjson null_value = jjson::valune(nullptr);  //null
 ```
 -  bool 
@@ -27,9 +27,9 @@ JSON values are created by call to `jjson::value`
 ```
 - number
 ```c++
-auto jjson_int = jjson::value((int64_t)10);           //10
+auto jjson_int = jjson::value((int64_t)10);   //10
 auto jjson_int_w_exponent = jjson::value((int64_t)10,12); //10e12
-auto jjson_float = jjson::value(183.32);                  //183.32
+auto jjson_float = jjson::value(183.32);    //183.32
 auto jjson_float_w_exponent = jjson::value(3.14,-1);      //3.14e-1
 ```
 - Array
@@ -40,21 +40,21 @@ const auto jjson_sub_array = jjson::Array({ "test" , (int64_t)5 });
 auto jjson_nested_array = jjson::Array({ "duck" , (int64_t)2 , jjson_array4 });     //["duck" , 2 , [ "test" , 5 ]]
 jjson_nested_array[2]; // ["test",5]
 ```
--Object
+- Object
 ```c++
-auto jjson_empty_object = jjson::Object();                                  //{}
-auto jjson_object = jjson::Object();                                        //{}
-auto jjson_array = jjson::Array({ "test" , (int64_t)5 });                     //[ "test" , 5 ]
-jjson_object["string"] = "string";                                            //{ "string"  : "string"}
-jjson_object["string"] = "new string";                                        //{ "string" : "new string"}
-jjson_object["country"] = "Barbados";                                         //{ "country" : "Barbados" , "string" : "new string"}
-jjson_empty_object["int"] = (int64_t)12;                                      //{ "int" : 12,}
-jjson_object["array"] = jjson_array4;                                         //{ "array" : [ "test" , 5 ] , "country" : "Barbados" , "string" : "new string"}
-jjson_object["object"] = jjson_empty_object;                                    //{ "array" : [ "test" , 5 ] , "country" : "Barbados" ,"object" : {} , "string" : "new string"}
-jjson_object["parish"] = "St. George";                                           //{ "array" : [ "test" , 5 ] , "country" : "Barbados" ,"object" : {} , "Parish" : "St. George" ,"string" : "new string"}
-jjson_object["null"] = null;                                           //{ "array" : [ "test" , 5 ] , "country" : "Barbados" ,"object" : {} , "null" : null , "Parish" : "St. George" ,"string" : "new string"}
+auto jjson_empty_object = jjson::Object();  //{}
+auto jjson_object = jjson::Object();  //{}
+auto jjson_array = jjson::Array({ "test" , (int64_t)5 });  //[ "test" , 5 ]
+jjson_object["string"] = "string";  //{ "string"  : "string"}
+jjson_object["string"] = "new string";    //{ "string" : "new string"}
+jjson_object["country"] = "Barbados";     //{ "country" : "Barbados" , "string" : "new string"}
+jjson_empty_object["int"] = (int64_t)12;  //{ "int" : 12,}
+jjson_object["array"] = jjson_array4;     //{ "array" : [ "test" , 5 ] , "country" : "Barbados" , "string" : "new string"}
+jjson_object["object"] = jjson_empty_object;   //{ "array" : [ "test" , 5 ] , "country" : "Barbados" ,"object" : {} , "string" : "new string"}
+jjson_object["parish"] = "St. George";     //{ "array" : [ "test" , 5 ] , "country" : "Barbados" ,"object" : {} , "Parish" : "St. George" ,"string" : "new string"}
+jjson_object["null"] = null;   //{ "array" : [ "test" , 5 ] , "country" : "Barbados" ,"object" : {} , "null" : null , "Parish" : "St. George" ,"string" : "new string"}
 ```
--Parsing and printing
+- Parsing and printing
 ```c++
  auto jjson_object_object= jjson::value::parse_from_string(R"({"object1":{},"object2":{"key":"val","array":[{},"string",true]}})");
  jjson_object_object.to_string();   //{"object1":{},"object2":{"key":"val","array":[{},"string",true]}}
