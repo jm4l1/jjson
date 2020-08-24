@@ -41,7 +41,7 @@ namespace jjson{
         jimpl_->type = value::value_type::STRING;
         jimpl_->string_value = new jjson_str_t(string_value);
     }
-    value::value(const int64_t int_value , const int exponent)
+    value::value(const int int_value , const int exponent)
     :jimpl_(new impl)
     {
         jimpl_->type = value::value_type::INT;
@@ -327,10 +327,44 @@ namespace jjson{
         }
         return (value&)member->second;
     }
+    value& value::operator[](const char* key) const
+    {
+        if(key == nullptr){
+            auto v = new value();
+            v = null; 
+            return (value&)*v;
+        }
+        return (*this)[jjson_str_t(key)];
+    }
     std::ostream& operator<<(std::ostream& out , const value& v)
     {
         return out << v.to_string();
     }
+    
+    value::operator int() const{
+        assert((this->jimpl_->type == value_type::INT) || (this->jimpl_->type == value_type::FLOAT));
+        if(this->jimpl_->type == value_type::INT){
+            return this->jimpl_->int_value;
+        }
+            return this->jimpl_->float_value;
+    };
+    value::operator std::string() const{
+        assert((this->jimpl_->type == value_type::STRING));
+        return *(this->jimpl_->string_value);
+    };
+    value::operator float() const{
+        assert((this->jimpl_->type == value_type::INT) || (this->jimpl_->type == value_type::FLOAT));
+        if(this->jimpl_->type == value_type::INT){
+            return this->jimpl_->int_value;
+        }
+        return this->jimpl_->float_value;
+        
+    };
+    value::operator bool() const{
+        assert(this->jimpl_->type == value_type::BOOLEAN);
+         return this->jimpl_->boolean_value;
+    };
+
     int value::len() const
     {
         if(this->jimpl_->type != value_type::ARRAY)
@@ -411,7 +445,7 @@ namespace jjson{
                 return value();
             }
         }
-        return value((int64_t)int_value , exponent);
+        return value(int(int_value) , exponent);
     }
     value value::parse_as_float(const jjson_str_t &string_object)
     {

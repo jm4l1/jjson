@@ -272,17 +272,22 @@ namespace jjson{
             value(bool bool_value);
             value(const char* cstr_value);
             value(const jjson_str_t& string_value);
-            value(const int64_t int_value , const int exponent = 0);
+            value(const int int_value , const int exponent=0);
             value(const double float_value , const int exponent = 0);
             value(value_type type = value_type::INVALID);
             bool operator==(const value &B)const;
             value&& operator[](int index)const;
             value& operator[](const jjson_str_t&& key) const;
+            value& operator[](const char* key) const;
             int len() const;
             value_type type() const;
             bool is_valid() const;
             bool is_empty() const;
             bool HasKey(const jjson_str_t key) const;
+            operator int() const;
+            operator std::string() const;
+            operator float() const;
+            operator bool() const;
 
             ~value(); // destructor
             value(const value&);   // copy construtor
