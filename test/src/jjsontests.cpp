@@ -173,9 +173,12 @@ TEST_CASE("jjson value object constructor")
     const auto jjson_object = jjson::Object();
     const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
     REQUIRE(jjson_empty_object.to_string() == R"({})");
+    REQUIRE_FALSE(jjson_object.HasKey("test"));
     jjson_object["test"] = "string";
+    REQUIRE(jjson_object.HasKey("test"));
     REQUIRE(jjson_object.to_string() == R"({"test":"string"})");
     jjson_object["test"] = "new string";
+    REQUIRE(jjson_object.HasKey("test"));
     REQUIRE(jjson_object.to_string() == R"({"test":"new string"})");
     jjson_object["country"] = "Barbados";
     REQUIRE(jjson_object.to_string() == R"({"country":"Barbados","test":"new string"})");
