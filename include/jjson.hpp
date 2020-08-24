@@ -282,6 +282,7 @@ namespace jjson{
             value_type type() const;
             bool is_valid() const;
             bool is_empty() const;
+            bool HasKey(const jjson_str_t key) const;
 
             ~value(); // destructor
             value(const value&);   // copy construtor

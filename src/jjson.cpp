@@ -361,6 +361,14 @@ namespace jjson{
     {
         return this->jimpl_->type;
     }
+    bool value::HasKey(const jjson_str_t key) const
+    {
+        if(this->jimpl_->type != value_type::OBJECT )
+        {
+            return false;
+        }
+        return (this->jimpl_->object_value->find(key) != this->jimpl_->object_value->end());
+    }
     value value::parse_as_int(const jjson_str_t &string_object)
     {
         if(
