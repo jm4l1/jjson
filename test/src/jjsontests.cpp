@@ -51,8 +51,8 @@ TEST_CASE("jjson value bool to string")
 {
     auto jjson_true= jjson::value::parse_from_string(JJSON_TRUE);
     auto jjson_false= jjson::value::parse_from_string(JJSON_FALSE);
-    REQUIRE(jjson_true == true);
-    REQUIRE(jjson_false == false);
+    REQUIRE((bool)jjson_true == true);
+    REQUIRE((bool)jjson_false == false);
 }
 TEST_CASE("jjson value c_string constructor")
 {
@@ -77,10 +77,11 @@ TEST_CASE("jjson value string to string")
 }
 TEST_CASE("jjson value number constructor")
 {
-    auto jjson_int = jjson::value((int64_t)10);
-    auto jjson_int2 = jjson::value((int64_t)10, 1);
-    auto jjson_negative_int = jjson::value((int64_t)-890);
-    auto jjson_int_w_exponent = jjson::value((int64_t)10,12);
+    int x ;
+    auto jjson_int = jjson::value(10);
+    auto jjson_int2 = jjson::value(10, 1);
+    auto jjson_negative_int = jjson::value(-890);
+    auto jjson_int_w_exponent = jjson::value(10,12);
     auto jjson_float = jjson::value(183.32);
     auto jjson_negative_float = jjson::value(-0.0032);
     auto jjson_float_w_exponent = jjson::value(3.14,-1);
@@ -98,10 +99,10 @@ TEST_CASE("jjson value parse number from string")
     const auto jjson_negative_int = jjson::value::parse_from_string("-3340");
     const auto jjson_float = jjson::value::parse_from_string("340.2343");
     const auto jjson_negative_float = jjson::value::parse_from_string("-0.0032");
-    REQUIRE(jjson_int == (int64_t)10);
-    REQUIRE(jjson_negative_int == (int64_t)(-3340));
-    REQUIRE(jjson_float == 340.2343);
-    REQUIRE(jjson_negative_float == -0.0032);
+    REQUIRE((int)jjson_int == 10);
+    REQUIRE((int)jjson_negative_int == (-3340));
+    REQUIRE((float)jjson_float == float(340.2343));
+    REQUIRE((float)jjson_negative_float == float(-0.0032));
 }
 TEST_CASE("jjson value parse number invalid number")
 {
@@ -124,11 +125,11 @@ TEST_CASE("jjson value parse number invalid number")
 }
 TEST_CASE("jjson value array constructor")
 {
-    const auto jjson_array = jjson::Array({ (int64_t)1 , (int64_t)2 ,(double)3.00 });
+    const auto jjson_array = jjson::Array({ 1 , 2 ,(double)3.00 });
     const auto jjson_array2 = jjson::Array({ true , null ,false });
-    const auto jjson_array3 = jjson::Array({ "duck" , (int64_t)2 ,"goose" });
-    const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
-    auto jjson_nested_array = jjson::Array({ "duck" , (int64_t)2 , jjson_array4 });
+    const auto jjson_array3 = jjson::Array({ "duck" , 2 ,"goose" });
+    const auto jjson_array4 = jjson::Array({ "test" , 5 });
+    auto jjson_nested_array = jjson::Array({ "duck" , 2 , jjson_array4 });
     const auto jjson_empty_array =jjson::Array({});
     const auto jjson_nested_empty_array =jjson::Array({jjson_empty_array,jjson_empty_array,jjson_empty_array});
     const auto jjson_object_object= jjson::value::parse_from_string(R"({"object1":{},"object2":{"key":"val","array":[{},"string",true]}})");
@@ -138,7 +139,7 @@ TEST_CASE("jjson value array constructor")
     REQUIRE(jjson_nested_array.to_string() == R"(["duck",2,["test",5]])");
     REQUIRE(jjson_empty_array.to_string() == R"([])");
     REQUIRE(jjson_nested_empty_array.to_string() == R"([[],[],[]])");
-    REQUIRE(jjson_array[0] == (int64_t)1 );
+    REQUIRE((int)jjson_array[0] == 1 );
     REQUIRE(jjson_array.len() == 3 );
     REQUIRE(jjson_nested_array[2] == jjson_array4 );
     REQUIRE(jjson_nested_empty_array.type() == jjson::value::value_type::ARRAY );
@@ -151,17 +152,17 @@ TEST_CASE("jjson value array constructor")
 }
 TEST_CASE("jjson value parse array")
 {
-    const auto jjson_array =  jjson::Array({ (int64_t)1 , (int64_t)2 ,(int64_t)3 });
+    const auto jjson_array =  jjson::Array({ 1 , 2 ,3 });
     const auto jjson_array_parsed = jjson::value::parse_from_string(R"([1,2,3])");
     const auto jjson_array2 = jjson::value::parse_from_string(R"(["duck",false,"goose"])");
     const auto jjson_array3 = jjson::value::parse_from_string(R"([true,"test",null])");
-    const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
-    const auto jjson_nested_array = jjson::Array({ "duck" , (int64_t)2 , jjson_array4 });
+    const auto jjson_array4 = jjson::Array({ "test" , 5 });
+    const auto jjson_nested_array = jjson::Array({ "duck" , 2 , jjson_array4 });
     REQUIRE(jjson_array_parsed.type() == jjson::value::value_type::ARRAY);
     REQUIRE(jjson_array_parsed.len() == 3);
     REQUIRE(jjson_array == jjson_array_parsed);
     REQUIRE(jjson_array2.type() == jjson::value::value_type::ARRAY);
-    REQUIRE(jjson_array2[1] == false);
+    REQUIRE((bool)jjson_array2[1] == false);
     REQUIRE(jjson_array3.type() == jjson::value::value_type::ARRAY);
     REQUIRE(jjson_nested_array ==  jjson::value::parse_from_string(R"(["duck",2,["test",5]])"));
     REQUIRE_FALSE(jjson_nested_array ==  jjson::value::parse_from_string(R"(["duck",2,["test",5],[]])"));
@@ -171,7 +172,7 @@ TEST_CASE("jjson value object constructor")
     const auto jjson_empty_object = jjson::Object();
     const auto jjson_empty_array = jjson::Array();
     const auto jjson_object = jjson::Object();
-    const auto jjson_array4 = jjson::Array({ "test" , (int64_t)5 });
+    const auto jjson_array4 = jjson::Array({ "test" , 5 });
     REQUIRE(jjson_empty_object.to_string() == R"({})");
     REQUIRE_FALSE(jjson_object.HasKey("test"));
     jjson_object["test"] = "string";
@@ -182,7 +183,7 @@ TEST_CASE("jjson value object constructor")
     REQUIRE(jjson_object.to_string() == R"({"test":"new string"})");
     jjson_object["country"] = "Barbados";
     REQUIRE(jjson_object.to_string() == R"({"country":"Barbados","test":"new string"})");
-    jjson_empty_object["int"] = (int64_t)12;
+    jjson_empty_object["int"] = 12;
     jjson_empty_object["bool"] = true;
     jjson_object["array"] = jjson_array4;
     jjson_object["object"] = jjson_empty_object;
