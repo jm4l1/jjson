@@ -2,6 +2,7 @@
 
 #include "../catch.hpp"
 #include "../../include/jjson.hpp"
+#include <fstream>
 
 TEST_CASE("escape unescaped string")
 {
@@ -347,4 +348,20 @@ TEST_CASE("jjson RFC8259 examples")
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_array).type() == jjson::value::value_type::ARRAY);
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_object)["Image"]["IDs"].type() == jjson::value::value_type::ARRAY);
       REQUIRE(jjson::value::parse_from_string(rfc8259_json_array)[0].type() == jjson::value::value_type::OBJECT);
+}
+TEST_CASE("server config"){
+    std::ifstream config_file("../server.json");
+    std::string config_string;
+    std::string config_json = R"({"port" : 12345,"timeout" : 100,"server_name" : "CPPND Server","allowed_methods" : ["GET","OPTIONS","POST","DELETE"]})";
+    
+    if(config_file.is_open()) {
+        std::string line;
+        while (std::getline(config_file, line)) {
+            config_string.append(line);
+        }
+        auto config_object = jjson::value::parse_from_string(config_string); 
+        REQUIRE(config_object.is_valid());
+    }
+    auto config_object = jjson::value::parse_from_string(config_json);
+    REQUIRE(config_object.is_valid());
 }

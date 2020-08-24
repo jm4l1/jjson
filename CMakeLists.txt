@@ -6,11 +6,9 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-enable_testing()
-
 set(headers include/jjson.hpp)
 set(sources src/jjson.cpp)
 
 add_library(${project} STATIC ${sources} ${headers})
 
-add_subdirectory(test)
+# add_subdirectory(test)

@@ -3,4 +3,5 @@ tests/*.o
 bin
 *.o
 test/jjsontests
+test/build
 main*
