@@ -2,7 +2,7 @@
 #include <stdexcept>
 namespace jjson{
     value::value(value::value_type type)
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         switch (type)
         {
@@ -19,44 +19,44 @@ namespace jjson{
         }
     };
     value::value(std::nullptr_t)
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         jimpl_->type= value::value_type::Null;
     };
     value::value(bool bool_value)
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         jimpl_->type = value::value_type::BOOLEAN;
         jimpl_->boolean_value = bool_value;
     }
     value::value(const char* cstr_value)
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         jimpl_->type = value::value_type::STRING;
         jimpl_->string_value = new jjson_str_t(cstr_value);
     }
     value::value(const jjson_str_t &string_value)
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         jimpl_->type = value::value_type::STRING;
         jimpl_->string_value = new jjson_str_t(string_value);
     }
     value::value(const int int_value , const int exponent)
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         jimpl_->type = value::value_type::INT;
         jimpl_->int_value = int_value;
         jimpl_->exponent = exponent;
     }
     value::value(const double float_value , const int exponent)
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         jimpl_->type = value::value_type::FLOAT;
         jimpl_->float_value = float_value;
         jimpl_->exponent = exponent;
     }
     value::value(const value& B)   // copy construtor
-    :jimpl_(new impl)
+    :jimpl_(std::move(std::make_unique<impl>()))
     {
         this->jimpl_->type = B.jimpl_->type;
         switch (B.jimpl_->type)
@@ -89,7 +89,7 @@ namespace jjson{
         }
     };
     value::value(value&& B)        // move construtor
-    :jimpl_(new impl){
+    :jimpl_(std::move(std::make_unique<impl>())){
         jimpl_.release();
         jimpl_ = std::exchange(B.jimpl_ , null);
     };
@@ -107,7 +107,8 @@ namespace jjson{
         {
             return *this;
         }
-        jimpl_.reset(new impl());
+        jimpl_.release();
+        jimpl_ = std::move(std::make_unique<impl>());
         this->jimpl_->type = B.jimpl_->type;
         switch (this->jimpl_->type)
         {
