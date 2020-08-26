@@ -288,6 +288,17 @@ namespace jjson{
             operator std::string() const;
             operator float() const;
             operator bool() const;
+            
+            template <typename T>
+            operator std::vector<T>() const
+            {
+                assert(this->jimpl_->type == value_type::ARRAY);
+                auto vec = std::vector<T>();
+                for(T v : *(this->jimpl_->array_value)){
+                        vec.emplace_back(v);
+                }
+                return vec;
+            };
 
             ~value(); // destructor
             value(const value&);   // copy construtor
