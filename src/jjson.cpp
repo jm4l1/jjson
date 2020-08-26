@@ -365,7 +365,6 @@ namespace jjson{
         assert(this->jimpl_->type == value_type::BOOLEAN);
          return this->jimpl_->boolean_value;
     };
-
     int value::len() const
     {
         if(this->jimpl_->type != value_type::ARRAY)

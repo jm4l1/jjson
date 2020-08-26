@@ -149,6 +149,19 @@ TEST_CASE("jjson value array constructor")
     REQUIRE(jjson::value::parse_from_string( R"([[[[[1,[2,[[[4],"[t{e}r]"]]]]]]],{}])").to_string() == R"([[[[[1,[2,[[[4],"[t{e}r]"]]]]]]],{}])");
     jjson_nested_array.Add(jjson_object_object);
     REQUIRE(jjson_nested_array.to_string() == R"(["duck",2,["test",5],{"object1":{},"object2":{"array":[{},"string",true],"key":"val"}}])");
+    const auto jjson_string_array = jjson::Array({"duck" , "duck" , "goose"});
+    const auto jjson_array_as_vector = (std::vector<std::string>)jjson_string_array;
+    REQUIRE(jjson_array_as_vector.size() == 3);
+    REQUIRE(jjson_array_as_vector[0] == "duck");
+    REQUIRE(jjson_array_as_vector[1] == "duck");
+    REQUIRE(jjson_array_as_vector[2] == "goose");
+    const auto jjson_int_array = jjson::Array({1, 2 , 4 , 5});
+    const auto jjson_array_as_int = (std::vector<int>)jjson_int_array;
+    REQUIRE(jjson_array_as_int.size() == 4);
+    REQUIRE(jjson_array_as_int[0] == 1);
+    REQUIRE(jjson_array_as_int[1] == 2);
+    REQUIRE(jjson_array_as_int[2] == 4);
+    REQUIRE(jjson_array_as_int[3] == 5);
 }
 TEST_CASE("jjson value parse array")
 {
