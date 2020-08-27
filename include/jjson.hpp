@@ -9,6 +9,7 @@
 #include <string>
 #include <algorithm>
 #include <cmath>
+#include <cassert>
 #include <initializer_list>
 /*
     Class to represents JSON (Javascript Object Notation) data format
